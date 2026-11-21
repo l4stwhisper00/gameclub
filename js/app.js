@@ -3,6 +3,8 @@ import { storage } from "./storage.js";
 import { bindAvatarCropper } from "./avatar.js";
 import { renderCatalog } from "./catalog.js";
 import { renderRooms } from "./rooms.js";
+import { GAMES } from "./games.js";
+import { getPlayerResults, addPlayerResult, deletePlayerResult } from "./statistics.js";
 
 const app = document.querySelector("#app");
 const topActions = document.querySelector("#top-actions");
@@ -201,6 +203,118 @@ function renderHome() {
     <p class="section-kicker" style="margin-top:28px">Выбирай игру, создавай комнату и собирай свою команду — таверна уже открыта.</p>`;
 }
 
+
+function statisticsMarkup(rows, editable) {
+  const games = new Map(GAMES.map((game) => [game.id, game]));
+  const total = rows.length;
+  const wins = rows.filter((row) => row.outcome === "win").length;
+  const losses = rows.filter((row) => row.outcome === "loss").length;
+  const podiums = rows.filter((row) => row.placement <= 3).length;
+  const winRate = total ? Math.round((wins / total) * 100) : 0;
+  const averagePlace = total
+    ? (rows.reduce((sum, row) => sum + row.placement, 0) / total).toFixed(1)
+    : "—";
+  const grouped = new Map();
+  rows.forEach((row) => {
+    if (!grouped.has(row.game_id)) grouped.set(row.game_id, []);
+    grouped.get(row.game_id).push(row);
+  });
+  const gameRows = [...grouped.entries()]
+    .sort((a, b) => b[1].length - a[1].length)
+    .map(([gameId, results]) => {
+      const game = games.get(gameId);
+      const gameWins = results.filter((row) => row.outcome === "win").length;
+      const gamePodiums = results.filter((row) => row.placement <= 3).length;
+      const avg = (results.reduce((sum, row) => sum + row.placement, 0) / results.length).toFixed(1);
+      return `<div class="stats-game-row">
+        <div class="stats-game-icon">${escapeHTML(game?.emoji || "🎲")}</div>
+        <div class="stats-game-info"><strong>${escapeHTML(game?.short || game?.title || gameId)}</strong>
+          <span>${results.length} игр · ${gameWins} побед · ${gamePodiums} призовых мест</span></div>
+        <div class="stats-game-place"><strong>${avg}</strong><span>ср. место</span></div>
+      </div>`;
+    }).join("");
+  const recent = rows.slice(0, 8).map((row) => {
+    const game = games.get(row.game_id);
+    const date = new Date(row.created_at).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric" });
+    const result = row.outcome === "win" ? "Победа" : "Участие";
+    return `<div class="stats-history-row">
+      <div><strong>${escapeHTML(game?.short || game?.title || row.game_id)}</strong><span>${date} · ${row.players_count} игроков</span></div>
+      <span class="stats-place ${row.outcome === "win" ? "is-win" : ""}">${result} · ${row.placement}-е место</span>
+      ${editable ? `<button class="stats-delete" type="button" data-delete-result="${row.id}" aria-label="Удалить результат">×</button>` : ""}
+    </div>`;
+  }).join("");
+
+  return `
+    <section class="profile-card profile-statistics" id="profile-statistics">
+      <div class="stats-heading"><div><span class="eyebrow">ИГРОВОЙ ПУТЬ</span><h2 class="stats-title">Мои результаты</h2></div>
+        <span class="stats-total">${total} ${total === 1 ? "матч" : total > 1 && total < 5 ? "матча" : "матчей"}</span></div>
+      <div class="stats-summary">
+        <div class="stats-metric"><strong>${wins}</strong><span>Победы</span></div>
+        <div class="stats-metric"><strong>${winRate}%</strong><span>Винрейт</span></div>
+        <div class="stats-metric"><strong>${podiums}</strong><span>Топ-3</span></div>
+        <div class="stats-metric"><strong>${averagePlace}</strong><span>Среднее место</span></div>
+      </div>
+      <div class="profile-section"><h3>По играм</h3>
+        ${gameRows || '<p class="section-kicker">Пока нет результатов. Добавь первую сыгранную партию ниже.</p>'}
+      </div>
+      ${recent ? `<div class="profile-section"><h3>Последние матчи</h3><div class="stats-history">${recent}</div></div>` : ""}
+      ${editable ? `
+        <div class="profile-section stats-add-section"><h3>Добавить результат</h3>
+          <p class="section-kicker">Пока результаты вносятся вручную. Позже подключим автоматическую запись после завершения онлайн-матчей.</p>
+          <form id="stats-result-form" class="stats-result-form">
+            <label>Игра<select name="game_id" required>${GAMES.map((game) => `<option value="${escapeHTML(game.id)}">${escapeHTML(game.title)}</option>`).join("")}</select></label>
+            <label>Место<input name="placement" type="number" min="1" max="30" value="1" required></label>
+            <label>Игроков<input name="players_count" type="number" min="2" max="30" value="4" required></label>
+            <button class="button button--primary button--small" type="submit">Сохранить результат ↗</button>
+          </form>
+        </div>` : ""}
+    </section>`;
+}
+
+async function loadProfileStatistics(userId, editable) {
+  const container = document.querySelector("#profile-statistics-slot");
+  if (!container) return;
+  try {
+    const rows = await getPlayerResults(userId);
+    if (!document.querySelector("#profile-statistics-slot")) return;
+    container.innerHTML = statisticsMarkup(rows, editable);
+    if (editable) {
+      document.querySelector("#stats-result-form")?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const data = new FormData(form);
+        const submit = form.querySelector('button[type="submit"]');
+        submit.disabled = true;
+        try {
+          await addPlayerResult({
+            gameId: data.get("game_id"),
+            placement: Number(data.get("placement")),
+            playersCount: Number(data.get("players_count"))
+          });
+          showToast("Результат добавлен в статистику.");
+          await loadProfileStatistics(userId, true);
+        } catch (error) {
+          showToast(error.message || "Не удалось сохранить результат.", "error");
+          submit.disabled = false;
+        }
+      });
+      container.querySelectorAll("[data-delete-result]").forEach((button) => {
+        button.addEventListener("click", async () => {
+          try {
+            await deletePlayerResult(button.dataset.deleteResult);
+            showToast("Результат удалён.");
+            await loadProfileStatistics(userId, true);
+          } catch (error) {
+            showToast(error.message || "Не удалось удалить результат.", "error");
+          }
+        });
+      });
+    }
+  } catch (error) {
+    container.innerHTML = '<section class="profile-card profile-statistics"><p class="section-kicker">Не удалось загрузить статистику. Проверь, применена ли миграция статистики в Supabase.</p></section>';
+  }
+}
+
 function renderProfile() {
   const user = auth.getCurrentUser();
   if (!user) return navigate("#/login");
@@ -231,7 +345,9 @@ function renderProfile() {
         <div class="profile-section"><h3>Обо мне</h3><p class="profile-bio ${user.bio ? "" : "empty-bio"}">${escapeHTML(user.bio || "Расскажи другим игрокам немного о себе.")}</p></div>
         <div class="profile-section"><h3>Любимые игры</h3>${favoriteMarkup}</div>
       </section>
+      <div id="profile-statistics-slot"><section class="profile-card profile-statistics"><p class="section-kicker">Загружаем статистику…</p></section></div>
     </section>`;
+  loadProfileStatistics(user.id, true);
 }
 
 function renderSettings() {
@@ -429,7 +545,9 @@ function renderPublicProfile(usernameFromRoute) {
         <div class="profile-section"><h3>Обо мне</h3><p class="profile-bio ${user.bio ? "" : "empty-bio"}">${escapeHTML(user.bio || "Этот игрок пока ничего о себе не рассказал.")}</p></div>
         <div class="profile-section"><h3>Любимые игры</h3>${favorites}</div>
       </section>
+      <div id="profile-statistics-slot"><section class="profile-card profile-statistics"><p class="section-kicker">Загружаем статистику…</p></section></div>
     </section>`;
+  loadProfileStatistics(user.id, isOwnProfile);
 }
 
 function navigate(hash) {
