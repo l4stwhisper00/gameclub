@@ -289,7 +289,7 @@ export function renderRoomChat(container, room, currentUser) {
     const users = room.remote ? (room.members || []).map((member) => member.user).filter(Boolean) : readRoomPresence(room.id);
     onlineList.innerHTML = onlineMarkup(users, currentUser.id);
     const label = container.querySelector(".chat-online-label");
-    if (label) label.textContent = `СЕЙЧАС В КОМНАТЕ · ${users.length}`;
+    if (label) label.textContent = `УЧАСТНИКИ КОМНАТЫ · ${users.length}`;
   }
 
   async function sendMessage(text) {
