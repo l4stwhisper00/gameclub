@@ -5,14 +5,20 @@ function throwIfError(error) {
 }
 
 export async function getPlayerResults(userId) {
-  const { data, error } = await supabase
-    .from("club_game_results")
-    .select("id, user_id, game_id, placement, players_count, outcome, created_at")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(500);
-  throwIfError(error);
-  return data || [];
+  const pageSize = 500;
+  const results = [];
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await supabase
+      .from("club_game_results")
+      .select("id, user_id, game_id, placement, players_count, outcome, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .range(from, from + pageSize - 1);
+    throwIfError(error);
+    results.push(...(data || []));
+    if (!data || data.length < pageSize) break;
+  }
+  return results;
 }
 
 export async function addPlayerResult({ gameId, placement, playersCount }) {
