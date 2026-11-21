@@ -1,25 +1,28 @@
 # Supabase: online rooms
 
-## Current state
+## What this branch adds
 
-- `online-rooms.sql` creates a separate, hardened set of `club_*` tables and RPCs for shared rooms, membership, and room chat.
-- The current browser UI still reads/writes the prototype `localStorage` room/chat store. Applying the SQL alone does **not** switch the UI to online rooms.
-- The next code step is to replace those local operations with calls to the `club_*` RPCs/tables and Supabase Realtime, then test with two separate accounts.
+- Shared rooms and membership in the `club_rooms` and `club_room_members` tables.
+- Room messages in `club_room_messages`.
+- Public player cards in `club_public_profiles` (username, avatar and status only).
+- RLS policies and authenticated RPCs for creating/joining/leaving/managing rooms.
+- Supabase Realtime subscriptions for room, membership and chat changes.
+- The room list, room details, room actions and room chat now use the Supabase adapter in `js/online-rooms.js`.
 
-## Apply the migration
+## Apply the updated SQL
 
-1. Open the Supabase project.
-2. Go to **SQL Editor** → **New query**.
-3. Open `online-rooms.sql` in this repository, copy its full contents into the editor.
-4. Click **Run**.
-5. If Supabase reports an error, stop and send the complete error text. Do not rerun a partially applied script until the error is reviewed.
+The original room migration was applied earlier. This branch now also creates `club_public_profiles`, which is required to show player names and avatars across accounts.
 
-The migration is additive and uses `club_*` names to avoid changing the earlier prototype tables.
+1. Open the Supabase project → **SQL Editor** → **New query**.
+2. Open the latest `supabase/online-rooms.sql` from this branch.
+3. Paste the entire file and click **Run**. The script is designed to be re-runnable; it uses `create table if not exists` and replaces its policies/functions.
+4. If an error appears, stop and send the complete error text.
 
-## Security notes
+Do not add a secret/service-role key to the website. The browser uses only the publishable key.
 
-- Room creation and membership changes happen through authenticated RPCs.
-- RLS limits private room visibility and chat access to members.
-- The host is automatically inserted as a room member.
-- Do not put Supabase secret/service-role keys in browser code.
-- Do not store Mafia roles or other secret game state in a client-readable shared JSON column. Hidden game state needs server-side authorization before those games are made truly online.
+## Important limitations
+
+- This makes room creation, joining, membership and text chat shared between signed-in accounts.
+- The participant strip currently represents room members; it is not a precise online-presence indicator.
+- Actual game state and hidden information (especially Mafia roles) are not migrated. Do not treat Mafia or other hidden-role games as securely playable online until server-authorized game-state operations are implemented.
+- Browser verification with two separate accounts is still required before merging this PR into `main`.
