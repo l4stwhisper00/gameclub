@@ -198,3 +198,40 @@
   .rooms-hero__dice span { animation:none; }
   .room-card,.room-button { transition-duration:.01ms !important; }
 }
+
+
+/* Game rules guide */
+.room-detail-hero__tools { position:relative; display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin:0 0 16px; }
+.room-detail-hero__hint { color:#928da8; font-size:9px; }
+.room-button--guide { min-height:42px; padding:0 17px; border-color:rgba(196,181,253,.34); color:#f0eaff; background:linear-gradient(105deg,rgba(124,58,237,.28),rgba(34,211,238,.09)); box-shadow:0 8px 25px rgba(109,93,252,.12); font-size:10px; }
+.room-button--guide:hover { border-color:rgba(103,232,249,.55); background:rgba(139,92,246,.2); }
+.game-rules-dialog { width:min(720px,calc(100% - 28px)); max-width:720px; max-height:min(82vh,820px); padding:0; overflow:hidden; border:1px solid rgba(196,181,253,.22); border-radius:22px; color:#eeeaff; background:linear-gradient(145deg,#211d39,#11111e 78%); box-shadow:0 30px 100px rgba(0,0,0,.62); }
+.game-rules-dialog::backdrop { background:rgba(4,4,12,.78); backdrop-filter:blur(7px); }
+.game-rules-dialog[open] { animation:game-rules-in .2s ease both; }
+@keyframes game-rules-in { from { opacity:0; transform:translateY(10px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
+.game-rules-dialog__head { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; padding:23px 25px 18px; border-bottom:1px solid rgba(255,255,255,.08); }
+.game-rules-dialog__head h2 { margin:9px 0 0; font:600 clamp(16px,3vw,22px) var(--font-display); letter-spacing:-.7px; }
+.game-rules-dialog__close { display:grid; place-items:center; flex:0 0 34px; width:34px; height:34px; border:1px solid rgba(255,255,255,.12); border-radius:10px; color:#d9d3eb; background:rgba(255,255,255,.04); cursor:pointer; font-size:23px; line-height:1; }
+.game-rules-tabs { display:flex; flex-wrap:wrap; gap:8px; padding:15px 25px 0; }
+.game-rules-tab { min-height:36px; padding:0 13px; border:1px solid rgba(255,255,255,.1); border-radius:10px; color:#aaa5bd; background:rgba(255,255,255,.035); cursor:pointer; font:700 9px var(--font-body); }
+.game-rules-tab.is-active { border-color:rgba(167,139,250,.45); color:#eeeaff; background:rgba(139,92,246,.17); }
+.game-rules-content { max-height:48vh; padding:18px 25px 22px; overflow:auto; }
+.game-rules-sections { display:grid; gap:17px; }
+.game-rules-sections section { padding-bottom:14px; border-bottom:1px solid rgba(255,255,255,.065); }
+.game-rules-sections section:last-child { padding-bottom:0; border-bottom:0; }
+.game-rules-sections h3 { margin:0 0 7px; color:#d8ccff; font:600 12px var(--font-display); }
+.game-rules-sections p,.game-rules-sections li { color:#b4afc5; font-size:11px; line-height:1.85; }
+.game-rules-sections p { margin:0; }
+.game-rules-sections ul { margin:0; padding-left:19px; }
+.game-rules-steps { display:grid; gap:12px; margin:0; padding:0; list-style:none; counter-reset:guide; }
+.game-rules-steps li { position:relative; min-height:38px; padding:9px 12px 9px 47px; border:1px solid rgba(255,255,255,.07); border-radius:12px; color:#c8c3d8; background:rgba(255,255,255,.025); font-size:11px; line-height:1.75; counter-increment:guide; }
+.game-rules-steps li::before { content:counter(guide,decimal-leading-zero); position:absolute; top:10px; left:12px; color:#c4b5fd; font:600 11px var(--font-display); }
+.game-rules-note { margin:0; padding:13px 25px 18px; border-top:1px solid rgba(255,255,255,.07); color:#77738c; font-size:9px; line-height:1.7; }
+@media (max-width:560px) {
+  .room-detail-hero__tools { align-items:flex-start; flex-direction:column; gap:7px; }
+  .game-rules-dialog { border-radius:17px; }
+  .game-rules-dialog__head { padding:18px 17px 14px; }
+  .game-rules-tabs { padding:12px 17px 0; }
+  .game-rules-content { max-height:52vh; padding:15px 17px 18px; }
+  .game-rules-note { padding:12px 17px 15px; }
+}

@@ -160,6 +160,11 @@ function bindAuthForm(mode) {
       const user = mode === "register"
         ? await auth.register(credentials)
         : await auth.login(credentials);
+      if (user.needsEmailConfirmation) {
+        showToast("Аккаунт создан. Проверь почту и подтверди адрес, затем войди.");
+        navigate("#/login");
+        return;
+      }
       showToast(mode === "register" ? `Добро пожаловать, ${user.username}!` : `С возвращением, ${user.username}!`);
       const query = location.hash.includes("?") ? location.hash.split("?").slice(1).join("?") : "";
       const next = new URLSearchParams(query).get("next");
@@ -338,7 +343,7 @@ function renderSettings() {
 
   document.querySelector("#change-avatar").addEventListener("click", () => cropper.openFilePicker());
 
-  document.querySelector("#profile-form").addEventListener("submit", (event) => {
+  document.querySelector("#profile-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
     const errorBox = document.querySelector("#settings-error");
@@ -363,16 +368,10 @@ function renderSettings() {
       errorBox.classList.add("is-visible");
       return;
     }
-    const duplicate = storage.getUserByUsername(username);
-    if (duplicate && duplicate.id !== user.id) {
-      errorBox.textContent = "Этот никнейм уже занят. Выбери другой.";
-      errorBox.classList.add("is-visible");
-      return;
-    }
-
     saveButton.disabled = true;
+    saveButton.textContent = "Сохраняем…";
     try {
-      storage.updateUser(user.id, {
+      await auth.updateProfile({
         username,
         status,
         bio,
@@ -386,6 +385,7 @@ function renderSettings() {
       errorBox.textContent = error.message || "Не удалось сохранить профиль.";
       errorBox.classList.add("is-visible");
       saveButton.disabled = false;
+      saveButton.innerHTML = "Сохранить изменения <span>↗</span>";
     }
   });
 }

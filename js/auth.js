@@ -1,107 +1,117 @@
-import { storage, createId } from "./storage.js";
+import { supabase } from "./supabase.js";
 
-const encoder = new TextEncoder();
-
-function toHex(buffer) {
-  return [...new Uint8Array(buffer)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
-}
-
-async function hashPassword(password, salt) {
-  if (!globalThis.crypto?.subtle) {
-    throw new Error("Для безопасной авторизации нужен HTTPS. Откройте сайт через GitHub Pages или localhost.");
-  }
-  const data = encoder.encode(`${salt}:${password}`);
-  const digest = await crypto.subtle.digest("SHA-256", data);
-  return toHex(digest);
-}
-
-function makeSalt() {
-  const bytes = crypto.getRandomValues(new Uint8Array(16));
-  return toHex(bytes);
-}
+let currentUser = null;
+let initialized = false;
 
 function normalizeEmail(email) {
-  return String(email).trim().toLowerCase();
+  return String(email ?? "").trim().toLowerCase();
+}
+
+function mapUser(user) {
+  if (!user) return null;
+  const metadata = user.user_metadata ?? {};
+  return {
+    id: user.id,
+    email: user.email ?? "",
+    username: String(metadata.username ?? metadata.user_name ?? (user.email ?? "Игрок").split("@")[0]),
+    status: metadata.status ?? "Ищу компанию для игры",
+    bio: metadata.bio ?? "",
+    avatar: metadata.avatar ?? "",
+    favoriteGames: Array.isArray(metadata.favoriteGames) ? metadata.favoriteGames : [],
+    createdAt: user.created_at ?? new Date().toISOString()
+  };
+}
+
+function validateUsername(username) {
+  const clean = String(username ?? "").trim();
+  if (clean.length < 3 || clean.length > 20) {
+    throw new Error("Никнейм должен содержать от 3 до 20 символов.");
+  }
+  if (!/^[\p{L}\p{N}_-]+$/u.test(clean)) {
+    throw new Error("В никнейме допустимы буквы, цифры, дефис и подчёркивание.");
+  }
+  return clean;
 }
 
 function validateCredentials(email, password) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeEmail(email))) {
     throw new Error("Введите корректный адрес электронной почты.");
   }
-  if (String(password).length < 8) {
+  if (String(password ?? "").length < 8) {
     throw new Error("Пароль должен содержать не менее 8 символов.");
   }
 }
 
 export const auth = {
+  async initialize() {
+    if (initialized) return;
+    const { data, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    currentUser = mapUser(data.session?.user);
+    supabase.auth.onAuthStateChange((_event, session) => {
+      currentUser = mapUser(session?.user);
+    });
+    initialized = true;
+  },
+
   async register({ email, password, username }) {
     validateCredentials(email, password);
-    const normalizedEmail = normalizeEmail(email);
-    const cleanUsername = String(username ?? "").trim();
-
-    if (cleanUsername.length < 3 || cleanUsername.length > 20) {
-      throw new Error("Никнейм должен содержать от 3 до 20 символов.");
-    }
-    if (!/^[\p{L}\p{N}_-]+$/u.test(cleanUsername)) {
-      throw new Error("В никнейме допустимы буквы, цифры, дефис и подчёркивание.");
-    }
-    if (storage.getUserByEmail(normalizedEmail)) {
-      throw new Error("Аккаунт с такой почтой уже существует.");
-    }
-    if (storage.getUserByUsername(cleanUsername)) {
-      throw new Error("Этот никнейм уже занят.");
-    }
-
-    const salt = makeSalt();
-    const passwordHash = await hashPassword(password, salt);
-    const user = {
-      id: createId(),
-      email: normalizedEmail,
-      username: cleanUsername,
-      passwordSalt: salt,
-      passwordHash,
-      status: "Ищу компанию для игры",
-      bio: "",
-      avatar: "",
-      favoriteGames: [],
-      createdAt: new Date().toISOString()
+    const cleanUsername = validateUsername(username);
+    const { data, error } = await supabase.auth.signUp({
+      email: normalizeEmail(email),
+      password: String(password),
+      options: {
+        data: { username: cleanUsername }
+      }
+    });
+    if (error) throw error;
+    currentUser = mapUser(data.session?.user ?? null);
+    return {
+      ...(mapUser(data.user) ?? { username: cleanUsername, email: normalizeEmail(email) }),
+      needsEmailConfirmation: !data.session
     };
-
-    storage.createUser(user);
-    this.startSession(user.id);
-    return user;
   },
 
   async login({ email, password }) {
-    const user = storage.getUserByEmail(normalizeEmail(email));
-    if (!user) throw new Error("Неверная почта или пароль.");
-
-    const candidateHash = await hashPassword(String(password), user.passwordSalt);
-    if (candidateHash !== user.passwordHash) {
-      throw new Error("Неверная почта или пароль.");
-    }
-
-    this.startSession(user.id);
-    return user;
+    validateCredentials(email, password);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: normalizeEmail(email),
+      password: String(password)
+    });
+    if (error) throw error;
+    currentUser = mapUser(data.user);
+    return currentUser;
   },
 
-  startSession(userId) {
-    storage.saveSession({ userId, createdAt: new Date().toISOString() });
+  async updateProfile({ username, status, bio, avatar, favoriteGames }) {
+    const cleanUsername = validateUsername(username);
+    const { data, error } = await supabase.auth.updateUser({
+      data: {
+        username: cleanUsername,
+        status: String(status ?? "").trim(),
+        bio: String(bio ?? "").trim(),
+        avatar: String(avatar ?? ""),
+        favoriteGames: Array.isArray(favoriteGames) ? favoriteGames : []
+      }
+    });
+    if (error) throw error;
+    currentUser = mapUser(data.user);
+    return currentUser;
   },
 
-  logout() {
-    storage.clearSession();
+  async logout() {
+    currentUser = null;
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   },
 
   getCurrentUser() {
-    const session = storage.getSession();
-    if (!session?.userId) return null;
-    const user = storage.getUserById(session.userId);
-    if (!user) storage.clearSession();
-    return user;
+    return currentUser;
   },
 
   isAuthenticated() {
-    return Boolean(this.getCurrentUser());
+    return Boolean(currentUser);
   }
 };
+
+await auth.initialize();

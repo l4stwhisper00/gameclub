@@ -2,6 +2,7 @@ import { auth } from "./auth.js";
 import { storage, createId } from "./storage.js";
 import { GAMES, getGameById } from "./games.js";
 import { renderRoomChat, addRoomSystemMessage } from "./chat.js";
+import { renderGameRules } from "./game-rules.js";
 
 const CSS_ID = "nastolny-rooms-styles";
 
@@ -670,6 +671,10 @@ function renderRoom(container, roomId, user, inviteCode = "") {
           <div><span class="room-detail-status ${status.className}">${status.label}</span><h1>${escapeHTML(room.name)}</h1><p>${escapeHTML(room.description || "Ведущий пока не добавил описание комнаты.")}</p></div>
           <div class="room-detail-hero__icon">${game.emoji}</div>
         </div>
+        <div class="room-detail-hero__tools">
+          <button class="room-button room-button--guide" type="button" id="open-game-rules">📖 Правила игры</button>
+          <span class="room-detail-hero__hint">Краткая памятка и подробная инструкция</span>
+        </div>
         <div class="room-detail-hero__facts">
           <span>♟ ${members.length} / ${room.maxPlayers} игроков</span>
           <span>◷ ${escapeHTML(formatDate(room.scheduledAt))}</span>
@@ -720,8 +725,39 @@ function renderRoom(container, roomId, user, inviteCode = "") {
           </section>
         </aside>
       </div>
+      <dialog class="game-rules-dialog" id="game-rules-dialog" aria-labelledby="game-rules-title">
+        <div class="game-rules-dialog__head">
+          <div><span class="eyebrow">ПАМЯТКА ИГРОКА</span><h2 id="game-rules-title">${escapeHTML(game.title)} — правила</h2></div>
+          <button class="game-rules-dialog__close" type="button" id="close-game-rules" aria-label="Закрыть правила">×</button>
+        </div>
+        <div class="game-rules-tabs" role="tablist" aria-label="Формат правил">
+          <button class="game-rules-tab is-active" type="button" data-rules-mode="full" role="tab" aria-selected="true">Полные правила</button>
+          <button class="game-rules-tab" type="button" data-rules-mode="quick" role="tab" aria-selected="false">Объяснить новичку</button>
+        </div>
+        <div class="game-rules-content" id="game-rules-content">${renderGameRules(game, 'full')}</div>
+        <p class="game-rules-note">Это памятка для знакомства с игрой. Если правила конкретного издания отличаются, договоритесь о них с ведущим до начала партии.</p>
+      </dialog>
       <div id="room-chat-mount"></div>
     </section>`;
+
+  const rulesDialog = container.querySelector("#game-rules-dialog");
+  const rulesContent = container.querySelector("#game-rules-content");
+  container.querySelector("#open-game-rules")?.addEventListener("click", () => rulesDialog?.showModal());
+  container.querySelector("#close-game-rules")?.addEventListener("click", () => rulesDialog?.close());
+  rulesDialog?.addEventListener("click", (event) => {
+    if (event.target === rulesDialog) rulesDialog.close();
+  });
+  rulesDialog?.querySelectorAll("[data-rules-mode]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const mode = button.dataset.rulesMode;
+      rulesDialog.querySelectorAll("[data-rules-mode]").forEach((tab) => {
+        const active = tab === button;
+        tab.classList.toggle("is-active", active);
+        tab.setAttribute("aria-selected", String(active));
+      });
+      rulesContent.innerHTML = renderGameRules(game, mode);
+    });
+  });
 
   const chatMount = container.querySelector("#room-chat-mount");
   if (chatMount) renderRoomChat(chatMount, room, user);
