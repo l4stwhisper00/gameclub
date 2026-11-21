@@ -208,14 +208,16 @@ async function renderList(container, user) {
 
   search.addEventListener("input", refresh);
   filter.addEventListener("change", refresh);
-  grid.addEventListener("click", (event) => {
+  grid.addEventListener("click", async (event) => {
     const button = event.target.closest("[data-room-join]");
     if (!button) return;
     try {
-      joinRoom(button.dataset.roomJoin, user);
+      await joinOnlineRoom(button.dataset.roomJoin);
       notify("Ты присоединился к комнате.");
       go(`#/rooms/${encodeURIComponent(button.dataset.roomJoin)}`);
     } catch (error) {
+      notify(error.message, "error");
+    }    } catch (error) {
       notify(error.message, "error");
     }
   });
@@ -457,7 +459,7 @@ function renderCreate(container, user, presetGameId) {
   });
   updatePlayerLimits();
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const error = container.querySelector("#room-create-error");
     error.textContent = "";
@@ -495,9 +497,6 @@ function renderCreate(container, user, presetGameId) {
     };
 
     const room = {
-      id: createId(),
-      code: Math.random().toString(36).slice(2, 8).toUpperCase(),
-      inviteCode: Math.random().toString(36).slice(2, 10).toUpperCase(),
       gameId: chosenGame.id,
       name,
       description,
@@ -505,22 +504,14 @@ function renderCreate(container, user, presetGameId) {
       visibility: data.get("visibility") === "private" ? "private" : "public",
       scheduledAt,
       rules,
-      hostId: user.id,
-      status: "open",
-      createdAt: new Date().toISOString(),
-      members: [{
-        userId: user.id,
-        role: "host",
-        joinedAt: new Date().toISOString()
-      }]
+      hostId: user.id
     };
 
     try {
-      const rooms = storage.getRooms();
-      rooms.unshift(room);
-      storage.saveRooms(rooms);
+      await ensurePublicProfile(user);
+      const roomId = await createOnlineRoom(room);
       notify("Комната создана. Добро пожаловать за стол!");
-      go(`#/rooms/${encodeURIComponent(room.id)}`);
+      go(`#/rooms/${encodeURIComponent(roomId)}`);
     } catch (saveError) {
       error.textContent = saveError.message || "Не удалось сохранить комнату.";
       error.classList.add("is-visible");
@@ -633,11 +624,11 @@ async function renderRoom(container, roomId, user, inviteCode = "") {
           <button class="room-button room-button--primary room-button--large" id="room-accept-invite" type="button">Принять приглашение ↗</button>
           <a class="room-back-link" style="display:block;margin-top:18px" href="#/rooms">Не сейчас · к комнатам</a>
         </section>`;
-      container.querySelector("#room-accept-invite").addEventListener("click", () => {
+      container.querySelector("#room-accept-invite").addEventListener("click", async () => {
         try {
-          joinRoom(room.id, user, inviteCode);
+          await joinOnlineRoom(room.id, inviteCode);
           notify("Ты присоединился к приватной комнате.");
-          renderRoom(container, room.id, user);
+          await renderRoom(container, room.id, user);
         } catch (error) {
           notify(error.message, "error");
         }
@@ -767,9 +758,9 @@ async function renderRoom(container, roomId, user, inviteCode = "") {
   const chatMount = container.querySelector("#room-chat-mount");
   if (chatMount) renderRoomChat(chatMount, room, user);
 
-  container.querySelector("#room-join")?.addEventListener("click", () => {
+  container.querySelector("#room-join")?.addEventListener("click", async () => {
     try {
-      joinRoom(room.id, user);
+      await joinOnlineRoom(room.id);
       notify("Добро пожаловать за стол!");
       renderRoom(container, room.id, user);
     } catch (error) {
@@ -777,53 +768,47 @@ async function renderRoom(container, roomId, user, inviteCode = "") {
     }
   });
 
-  container.querySelector("#room-leave")?.addEventListener("click", () => {
+  container.querySelector("#room-leave")?.addEventListener("click", async () => {
     try {
-      updateRoom(room.id, (current) => {
-        current.members = current.members.filter((entry) => entry.userId !== user.id);
-        return current;
-      });
-      addRoomSystemMessage(room.id, `${user.username} покинул комнату.`);
+      await leaveOnlineRoom(room.id);
       notify("Ты покинул комнату.");
       go("#/rooms");
-    } catch (error) {
-      notify(error.message, "error");
-    }
+    } catch (error) { notify(error.message, "error"); }
   });
 
-  container.querySelector("#room-start")?.addEventListener("click", () => {
-    updateRoom(room.id, (current) => ({ ...current, status: "playing" }));
-    addRoomSystemMessage(room.id, "Ведущий начал игру.");
-    notify("Игра началась!");
-    renderRoom(container, room.id, user);
+  container.querySelector("#room-start")?.addEventListener("click", async () => {
+    try {
+      await setOnlineRoomStatus(room.id, "playing");
+      notify("Игра началась!");
+      await renderRoom(container, room.id, user);
+    } catch (error) { notify(error.message, "error"); }
   });
 
-  container.querySelector("#room-close")?.addEventListener("click", () => {
+  container.querySelector("#room-close")?.addEventListener("click", async () => {
     if (!window.confirm("Завершить комнату? Новые игроки не смогут присоединиться.")) return;
-    updateRoom(room.id, (current) => ({ ...current, status: "closed" }));
-    addRoomSystemMessage(room.id, "Ведущий завершил комнату.");
-    notify("Комната завершена.");
-    renderRoom(container, room.id, user);
+    try {
+      await setOnlineRoomStatus(room.id, "closed");
+      notify("Комната завершена.");
+      await renderRoom(container, room.id, user);
+    } catch (error) { notify(error.message, "error"); }
   });
 
-  container.querySelector("#room-delete")?.addEventListener("click", () => {
+  container.querySelector("#room-delete")?.addEventListener("click", async () => {
     if (!window.confirm("Удалить комнату без возможности восстановления?")) return;
-    storage.saveRooms(storage.getRooms().filter((current) => current.id !== room.id));
-    notify("Комната удалена.");
-    go("#/rooms");
+    try {
+      await deleteOnlineRoom(room.id);
+      notify("Комната удалена.");
+      go("#/rooms");
+    } catch (error) { notify(error.message, "error"); }
   });
 
   container.querySelectorAll("[data-kick]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const userId = button.dataset.kick;
-      const removedUser = storage.getUserById(userId);
-      updateRoom(room.id, (current) => {
-        current.members = current.members.filter((entry) => entry.userId !== userId);
-        return current;
-      });
-      addRoomSystemMessage(room.id, `${removedUser?.username || "Игрок"} удалён ведущим из комнаты.`);
-      notify("Игрок удалён из комнаты.");
-      renderRoom(container, room.id, user);
+    button.addEventListener("click", async () => {
+      try {
+        await removeOnlineRoomMember(room.id, button.dataset.kick);
+        notify("Игрок удалён из комнаты.");
+        await renderRoom(container, room.id, user);
+      } catch (error) { notify(error.message, "error"); }
     });
   });
 
