@@ -101,10 +101,7 @@ for insert to authenticated
 with check (
   user_id = (select auth.uid())
   and message_type = 'user'
-  and exists (
-    select 1 from public.club_room_members m
-    where m.room_id = club_room_messages.room_id and m.user_id = (select auth.uid())
-  )
+  and public.club_is_room_member(room_id)
 );
 
 create or replace function public.club_create_room(
