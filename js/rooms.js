@@ -217,8 +217,6 @@ async function renderList(container, user) {
       go(`#/rooms/${encodeURIComponent(button.dataset.roomJoin)}`);
     } catch (error) {
       notify(error.message, "error");
-    }    } catch (error) {
-      notify(error.message, "error");
     }
   });
 }
