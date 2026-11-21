@@ -3,6 +3,8 @@ import { storage, createId } from "./storage.js";
 import { GAMES, getGameById } from "./games.js";
 import { renderRoomChat, addRoomSystemMessage } from "./chat.js";
 import { renderGameRules } from "./game-rules.js";
+import { ensurePublicProfile, listOnlineRooms, getOnlineRoom, createOnlineRoom, joinOnlineRoom, leaveOnlineRoom, setOnlineRoomStatus, removeOnlineRoomMember, deleteOnlineRoom } from "./online-rooms.js";
+let onlineRoomsCache = [];
 
 const CSS_ID = "nastolny-rooms-styles";
 
@@ -95,7 +97,7 @@ function getRoomUrl(room) {
 function roomCard(room, user) {
   const game = getGameById(room.gameId);
   if (!game) return "";
-  const host = storage.getUserById(room.hostId);
+  const host = room.host || storage.getUserById(room.hostId);
   const member = getMember(room, user.id);
   const status = getStatus(room);
   const count = (room.members || []).length;
@@ -126,8 +128,10 @@ function roomCard(room, user) {
     </article>`;
 }
 
-function renderList(container, user) {
-  const visibleRooms = storage.getRooms()
+async function renderList(container, user) {
+  await ensurePublicProfile(user);
+  onlineRoomsCache = await listOnlineRooms();
+  const visibleRooms = onlineRoomsCache
     .filter((room) => room.visibility === "public" || getMember(room, user.id))
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
@@ -179,7 +183,7 @@ function renderList(container, user) {
   function refresh() {
     const query = search.value.trim().toLocaleLowerCase("ru");
     const mode = filter.value;
-    const matches = storage.getRooms()
+    const matches = onlineRoomsCache
       .filter((room) => room.visibility === "public" || getMember(room, user.id))
       .filter((room) => {
         if (mode === "mine" && !getMember(room, user.id)) return false;
@@ -597,8 +601,9 @@ function readableRuleSettings(room) {
   return rows;
 }
 
-function renderRoom(container, roomId, user, inviteCode = "") {
-  const room = getRoomById(roomId);
+async function renderRoom(container, roomId, user, inviteCode = "") {
+  await ensurePublicProfile(user);
+  const room = await getOnlineRoom(roomId);
   if (!room) {
     container.innerHTML = `
       <section class="room-not-found page-enter">
@@ -653,7 +658,7 @@ function renderRoom(container, roomId, user, inviteCode = "") {
   const status = getStatus(room);
   const members = (room.members || []).map((entry) => ({
     ...entry,
-    user: storage.getUserById(entry.userId)
+    user: entry.user || storage.getUserById(entry.userId)
   })).filter((entry) => entry.user);
   const full = members.length >= room.maxPlayers;
   const isHost = room.hostId === user.id;
@@ -833,7 +838,7 @@ function renderRoom(container, roomId, user, inviteCode = "") {
   });
 }
 
-export function renderRooms(container, route = "/rooms") {
+export async function renderRooms(container, route = "/rooms") {
   ensureStyles();
   const user = getCurrentUser();
   if (!user) {
@@ -843,7 +848,7 @@ export function renderRooms(container, route = "/rooms") {
 
   const [path, query = ""] = route.split("?");
   if (path === "/rooms" || path === "/rooms/") {
-    renderList(container, user);
+    renderList(container, user).catch((error) => { container.innerHTML = "<p>Не удалось загрузить комнаты: " + escapeHTML(error.message) + "</p>"; });
     return;
   }
   if (path === "/rooms/new") {
@@ -858,5 +863,5 @@ export function renderRooms(container, route = "/rooms") {
     return;
   }
   const params = new URLSearchParams(query);
-  renderRoom(container, roomId, user, params.get("invite") || "");
+  renderRoom(container, roomId, user, params.get("invite") || "").catch((error) => { container.innerHTML = "<p>Не удалось открыть комнату: " + escapeHTML(error.message) + "</p>"; });
 }
