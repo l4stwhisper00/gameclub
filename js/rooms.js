@@ -719,7 +719,7 @@ async function renderRoom(container, roomId, user, inviteCode = "") {
           <section class="room-panel room-invite-panel">
             <span class="eyebrow">ПРИГЛАСИ ДРУЗЕЙ</span>
             <h3>Собирай свою команду</h3>
-            <p>Поделись ссылкой на комнату. Для приватной комнаты ведущий должен добавить участника лично.</p>
+            <p>Поделись ссылкой на комнату. В приватную комнату друзья смогут войти по этой ссылке-приглашению.</p>
             <button class="room-button room-button--soft room-button--full" type="button" id="room-copy-link">Скопировать ссылку ↗</button>
           </section>
         </aside>
