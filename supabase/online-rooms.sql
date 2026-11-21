@@ -45,39 +45,54 @@ alter table public.club_rooms enable row level security;
 alter table public.club_room_members enable row level security;
 alter table public.club_room_messages enable row level security;
 
+-- SECURITY DEFINER helpers avoid recursive RLS evaluation on membership lookups.
+create or replace function public.club_is_room_member(p_room_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $
+  select exists (
+    select 1 from public.club_room_members
+    where room_id = p_room_id and user_id = auth.uid()
+  );
+$;
+
+create or replace function public.club_can_view_room(p_room_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $
+  select exists (
+    select 1 from public.club_rooms
+    where id = p_room_id
+      and (visibility = 'public' or public.club_is_room_member(id))
+  );
+$;
+
+revoke all on function public.club_is_room_member(uuid) from public;
+revoke all on function public.club_can_view_room(uuid) from public;
+grant execute on function public.club_is_room_member(uuid) to authenticated;
+grant execute on function public.club_can_view_room(uuid) to authenticated;
+
 drop policy if exists "Read visible club rooms" on public.club_rooms;
 create policy "Read visible club rooms" on public.club_rooms
 for select to authenticated
-using (
-  visibility = 'public'
-  or exists (
-    select 1 from public.club_room_members m
-    where m.room_id = club_rooms.id and m.user_id = (select auth.uid())
-  )
-);
+using (visibility = 'public' or public.club_is_room_member(id));
 
 drop policy if exists "Read members of visible rooms" on public.club_room_members;
 create policy "Read members of visible rooms" on public.club_room_members
 for select to authenticated
-using (
-  exists (
-    select 1 from public.club_rooms r
-    where r.id = club_room_members.room_id
-      and (r.visibility = 'public' or exists (
-        select 1 from public.club_room_members mine
-        where mine.room_id = r.id and mine.user_id = (select auth.uid())
-      ))
-  )
-);
+using (public.club_can_view_room(room_id));
 
 drop policy if exists "Members read room messages" on public.club_room_messages;
 create policy "Members read room messages" on public.club_room_messages
 for select to authenticated
 using (
-  exists (
-    select 1 from public.club_room_members m
-    where m.room_id = club_room_messages.room_id and m.user_id = (select auth.uid())
-  )
+  public.club_is_room_member(room_id)
 );
 
 drop policy if exists "Members send room messages" on public.club_room_messages;
