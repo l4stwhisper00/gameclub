@@ -27,14 +27,14 @@ function validateUsername(username) {
   if (clean.length < 3 || clean.length > 20) {
     throw new Error("Никнейм должен содержать от 3 до 20 символов.");
   }
-  if (!/^[\\p{L}\\p{N}_-]+$/u.test(clean)) {
+  if (!/^[\p{L}\p{N}_-]+$/u.test(clean)) {
     throw new Error("В никнейме допустимы буквы, цифры, дефис и подчёркивание.");
   }
   return clean;
 }
 
 function validateCredentials(email, password) {
-  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(normalizeEmail(email))) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeEmail(email))) {
     throw new Error("Введите корректный адрес электронной почты.");
   }
   if (String(password ?? "").length < 8) {
