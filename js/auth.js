@@ -83,6 +83,22 @@ export const auth = {
     return currentUser;
   },
 
+  async updateProfile({ username, status, bio, avatar, favoriteGames }) {
+    const cleanUsername = validateUsername(username);
+    const { data, error } = await supabase.auth.updateUser({
+      data: {
+        username: cleanUsername,
+        status: String(status ?? "").trim(),
+        bio: String(bio ?? "").trim(),
+        avatar: String(avatar ?? ""),
+        favoriteGames: Array.isArray(favoriteGames) ? favoriteGames : []
+      }
+    });
+    if (error) throw error;
+    currentUser = mapUser(data.user);
+    return currentUser;
+  },
+
   async logout() {
     currentUser = null;
     const { error } = await supabase.auth.signOut();
