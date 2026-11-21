@@ -52,12 +52,12 @@ language sql
 stable
 security definer
 set search_path = public
-as $
+as $member_check$
   select exists (
     select 1 from public.club_room_members
     where room_id = p_room_id and user_id = auth.uid()
   );
-$;
+$member_check$;
 
 create or replace function public.club_can_view_room(p_room_id uuid)
 returns boolean
@@ -65,13 +65,14 @@ language sql
 stable
 security definer
 set search_path = public
-as $
+
+as $room_visibility$
   select exists (
     select 1 from public.club_rooms
     where id = p_room_id
       and (visibility = 'public' or public.club_is_room_member(id))
   );
-$;
+$room_visibility$;
 
 revoke all on function public.club_is_room_member(uuid) from public;
 revoke all on function public.club_can_view_room(uuid) from public;
