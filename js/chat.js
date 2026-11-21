@@ -1,5 +1,5 @@
 import { storage, createId } from "./storage.js";
-import { listOnlineMessages, sendOnlineMessage, subscribeOnlineRoom } from "./online-rooms.js";
+import { listOnlineMessages, sendOnlineMessage, subscribeOnlineRoom, getOnlineRoom } from "./online-rooms.js";
 
 const MESSAGE_PREFIX = "nastolny-club:chat:";
 const PRESENCE_PREFIX = "nastolny-club:presence:";
@@ -354,7 +354,7 @@ export function renderRoomChat(container, room, currentUser) {
 
   renderMessages();
   renderOnline();
-  if (room.remote && isMember) remoteUnsubscribe = subscribeOnlineRoom(room.id, () => { renderMessages({ keepScroll: true }); renderOnline(); });
+  if (room.remote && isMember) remoteUnsubscribe = subscribeOnlineRoom(room.id, async (payload) => { if (payload?.table === "club_room_members") { const fresh = await getOnlineRoom(room.id); if (fresh) room.members = fresh.members; } renderMessages({ keepScroll: true }); renderOnline(); });
 
   if (isMember) {
     updatePresence();
