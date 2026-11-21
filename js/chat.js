@@ -219,7 +219,7 @@ export function renderRoomChat(container, room, currentUser) {
         <span class="room-chat__secure"><i></i> ${room.remote ? "ОНЛАЙН · REALTIME" : "ЛОКАЛЬНЫЙ ЧАТ"}</span>
       </header>
       <div class="room-chat__online" id="chat-online">
-        <span class="chat-online-label">СЕЙЧАС В КОМНАТЕ</span>
+        <span class="chat-online-label">УЧАСТНИКИ КОМНАТЫ</span>
         <div class="chat-online-list" id="chat-online-list"><span class="chat-online-empty">Обновляем список…</span></div>
       </div>
       <div class="room-chat__messages" id="chat-messages" role="log" aria-live="polite" aria-relevant="additions text">
@@ -354,7 +354,7 @@ export function renderRoomChat(container, room, currentUser) {
 
   renderMessages();
   renderOnline();
-  if (room.remote) remoteUnsubscribe = subscribeOnlineRoom(room.id, () => { renderMessages({ keepScroll: true }); renderOnline(); });
+  if (room.remote && isMember) remoteUnsubscribe = subscribeOnlineRoom(room.id, () => { renderMessages({ keepScroll: true }); renderOnline(); });
 
   if (isMember) {
     updatePresence();
