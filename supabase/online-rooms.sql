@@ -263,3 +263,25 @@ begin
   alter publication supabase_realtime add table public.club_room_messages;
 exception when duplicate_object then null;
 end $$;
+
+
+-- Public player cards used by the shared rooms UI.
+create table if not exists public.club_public_profiles (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  username text not null check (char_length(username) between 3 and 20),
+  avatar text not null default '',
+  status text not null default '',
+  updated_at timestamptz not null default now()
+);
+alter table public.club_public_profiles enable row level security;
+drop policy if exists "Authenticated users read public player cards" on public.club_public_profiles;
+create policy "Authenticated users read public player cards" on public.club_public_profiles
+for select to authenticated using (true);
+drop policy if exists "Users insert own player card" on public.club_public_profiles;
+create policy "Users insert own player card" on public.club_public_profiles
+for insert to authenticated with check (user_id = (select auth.uid()));
+drop policy if exists "Users update own player card" on public.club_public_profiles;
+create policy "Users update own player card" on public.club_public_profiles
+for update to authenticated using (user_id = (select auth.uid()))
+with check (user_id = (select auth.uid()));
+grant select, insert, update on public.club_public_profiles to authenticated;
