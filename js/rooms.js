@@ -172,7 +172,7 @@ async function renderList(container, user) {
         <p>Создай первую комнату и пригласи игроков в свою партию.</p>
         <a class="room-button room-button--primary" href="#/rooms/new">Создать первую комнату ↗</a>
       </div>
-      <p class="rooms-footnote">КОМНАТЫ СОХРАНЯЮТСЯ В ЭТОМ БРАУЗЕРЕ · УЧАСТНИКИ ИГРЫ ИСПОЛЬЗУЮТ ОБЩИЙ БРАУЗЕРНЫЙ ПРОФИЛЬ</p>
+      <p class="rooms-footnote">КОМНАТЫ И УЧАСТНИКИ СИНХРОНИЗИРУЮТСЯ ЧЕРЕЗ SUPABASE · ВОЙДИ В АККАУНТ, ЧТОБЫ ИГРАТЬ С ДРУГИМИ</p>
     </section>`;
 
   const search = container.querySelector("#rooms-search");
@@ -595,6 +595,7 @@ async function renderRoom(container, roomId, user, inviteCode = "") {
   let room = await getOnlineRoom(roomId);
   if (!room && inviteCode) {
     await joinOnlineRoom(roomId, inviteCode);
+    notify("Ты присоединился к приватной комнате по приглашению.");
     room = await getOnlineRoom(roomId);
   }
   if (!room) {
@@ -647,7 +648,7 @@ async function renderRoom(container, roomId, user, inviteCode = "") {
     return;
   }
 
-  const host = storage.getUserById(room.hostId);
+  const host = room.host || storage.getUserById(room.hostId);
   const status = getStatus(room);
   const members = (room.members || []).map((entry) => ({
     ...entry,
