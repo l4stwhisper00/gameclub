@@ -160,6 +160,11 @@ function bindAuthForm(mode) {
       const user = mode === "register"
         ? await auth.register(credentials)
         : await auth.login(credentials);
+      if (user.needsEmailConfirmation) {
+        showToast("Аккаунт создан. Проверь почту и подтверди адрес, затем войди.");
+        navigate("#/login");
+        return;
+      }
       showToast(mode === "register" ? `Добро пожаловать, ${user.username}!` : `С возвращением, ${user.username}!`);
       const query = location.hash.includes("?") ? location.hash.split("?").slice(1).join("?") : "";
       const next = new URLSearchParams(query).get("next");
