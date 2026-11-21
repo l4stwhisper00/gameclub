@@ -1,4 +1,5 @@
 import { storage, createId } from "./storage.js";
+import { listOnlineMessages, sendOnlineMessage, subscribeOnlineRoom, getOnlineRoom } from "./online-rooms.js";
 
 const MESSAGE_PREFIX = "nastolny-club:chat:";
 const PRESENCE_PREFIX = "nastolny-club:presence:";
@@ -124,7 +125,7 @@ function messageMarkup(message, currentUserId) {
       </div>`;
   }
 
-  const sender = storage.getUserById(message.userId);
+  const sender = message.user || storage.getUserById(message.userId);
   if (!sender) return "";
   const own = message.userId === currentUserId;
   return `
@@ -206,7 +207,7 @@ function ensureWelcomeMessage(room) {
 export function renderRoomChat(container, room, currentUser) {
   ensureChatStyles();
   const isMember = (room.members || []).some((member) => member.userId === currentUser.id);
-  ensureWelcomeMessage(room);
+  if (!room.remote) ensureWelcomeMessage(room);
 
   container.innerHTML = `
     <section class="room-chat" aria-label="Чат комнаты">
@@ -215,10 +216,10 @@ export function renderRoomChat(container, room, currentUser) {
           <span class="room-chat__icon">⌁</span>
           <div><span class="eyebrow">ОБЩЕНИЕ КОМАНДЫ</span><h2>Чат комнаты</h2></div>
         </div>
-        <span class="room-chat__secure"><i></i> ЛОКАЛЬНЫЙ ЧАТ</span>
+        <span class="room-chat__secure"><i></i> ${room.remote ? "ОНЛАЙН · REALTIME" : "ЛОКАЛЬНЫЙ ЧАТ"}</span>
       </header>
       <div class="room-chat__online" id="chat-online">
-        <span class="chat-online-label">СЕЙЧАС В КОМНАТЕ</span>
+        <span class="chat-online-label">УЧАСТНИКИ КОМНАТЫ</span>
         <div class="chat-online-list" id="chat-online-list"><span class="chat-online-empty">Обновляем список…</span></div>
       </div>
       <div class="room-chat__messages" id="chat-messages" role="log" aria-live="polite" aria-relevant="additions text">
@@ -253,10 +254,13 @@ export function renderRoomChat(container, room, currentUser) {
   let cleaned = false;
   let heartbeatId = null;
   let observer = null;
+  let remoteUnsubscribe = null;
 
-  function renderMessages({ keepScroll = false } = {}) {
+  let remoteMessages = [];
+  async function renderMessages({ keepScroll = false } = {}) {
+    if (room.remote) { try { remoteMessages = await listOnlineMessages(room.id); } catch (error) { console.warn("Не удалось загрузить онлайн-чат:", error); } }
     const wasNearBottom = messageList.scrollHeight - messageList.scrollTop - messageList.clientHeight < 90;
-    const messages = readRoomMessages(room.id);
+    const messages = room.remote ? remoteMessages : readRoomMessages(room.id);
     messageList.innerHTML = messages.length
       ? messages.map((message) => messageMarkup(message, currentUser.id)).join("")
       : `<div class="chat-empty-history"><span>✧</span><p>История пока пуста. Начни разговор!</p></div>`;
@@ -264,6 +268,7 @@ export function renderRoomChat(container, room, currentUser) {
   }
 
   function updatePresence() {
+    if (room.remote) { if (!cleaned) renderOnline(); return; }
     if (cleaned || !isMember) return;
     const presence = {
       roomId: room.id,
@@ -281,25 +286,22 @@ export function renderRoomChat(container, room, currentUser) {
 
   function renderOnline() {
     if (cleaned) return;
-    const users = readRoomPresence(room.id);
+    const users = room.remote ? (room.members || []).map((member) => member.user).filter(Boolean) : readRoomPresence(room.id);
     onlineList.innerHTML = onlineMarkup(users, currentUser.id);
     const label = container.querySelector(".chat-online-label");
-    if (label) label.textContent = `СЕЙЧАС В КОМНАТЕ · ${users.length}`;
+    if (label) label.textContent = `УЧАСТНИКИ КОМНАТЫ · ${users.length}`;
   }
 
-  function sendMessage(text) {
+  async function sendMessage(text) {
     const clean = String(text || "").trim();
-    if (!clean || clean.length > MAX_MESSAGE_LENGTH) return;
-    if (!isMember) return;
+    if (!clean || clean.length > MAX_MESSAGE_LENGTH || !isMember) return;
     try {
-      addUserMessage(room.id, currentUser, clean);
-      renderMessages();
-      textarea.value = "";
-      updateCounter();
-      textarea.focus();
+      if (room.remote) { await sendOnlineMessage(room.id, currentUser.id, clean); await renderMessages({ keepScroll: true }); }
+      else { addUserMessage(room.id, currentUser, clean); renderMessages(); }
+      textarea.value = ""; updateCounter(); textarea.focus();
     } catch (error) {
-      container.querySelector(".room-chat__hint").textContent =
-        error.message || "Не удалось сохранить сообщение. Возможно, хранилище заполнено.";
+      const hint = container.querySelector(".room-chat__hint");
+      if (hint) hint.textContent = error.message || "Не удалось отправить сообщение.";
     }
   }
 
@@ -324,7 +326,7 @@ export function renderRoomChat(container, room, currentUser) {
   }
 
   function handleStorage(event) {
-    if (!event.key) return;
+    if (room.remote || !event.key) return;
     if (event.key.startsWith(roomPrefix)) renderMessages({ keepScroll: true });
     if (event.key.startsWith(presencePrefix)) renderOnline();
     if (event.key === "nastolny-club:users") renderMessages({ keepScroll: true });
@@ -338,6 +340,7 @@ export function renderRoomChat(container, room, currentUser) {
     if (cleaned) return;
     cleaned = true;
     if (heartbeatId !== null) window.clearInterval(heartbeatId);
+    if (remoteUnsubscribe) remoteUnsubscribe();
     window.removeEventListener("storage", handleStorage);
     document.removeEventListener("visibilitychange", handleVisibility);
     window.removeEventListener("focus", updatePresence);
@@ -345,16 +348,17 @@ export function renderRoomChat(container, room, currentUser) {
     chatForm?.removeEventListener("submit", handleSubmit);
     textarea?.removeEventListener("input", updateCounter);
     textarea?.removeEventListener("keydown", handleKeyDown);
-    localStorage.removeItem(presenceKey);
+    if (!room.remote) localStorage.removeItem(presenceKey);
     observer?.disconnect();
   }
 
   renderMessages();
   renderOnline();
+  if (room.remote && isMember) remoteUnsubscribe = subscribeOnlineRoom(room.id, async (payload) => { if (payload?.table === "club_room_members") { const fresh = await getOnlineRoom(room.id); if (fresh) room.members = fresh.members; } renderMessages({ keepScroll: true }); renderOnline(); });
 
   if (isMember) {
     updatePresence();
-    heartbeatId = window.setInterval(updatePresence, PRESENCE_INTERVAL);
+    if (!room.remote) heartbeatId = window.setInterval(updatePresence, PRESENCE_INTERVAL);
     chatForm.addEventListener("submit", handleSubmit);
     textarea.addEventListener("input", updateCounter);
     textarea.addEventListener("keydown", handleKeyDown);
