@@ -40,7 +40,7 @@ function mapRoom(row, profileMap) {
     gameId: row.game_id, name: row.name, description: row.description,
     maxPlayers: row.max_players, visibility: row.visibility, scheduledAt: row.scheduled_at || "",
     rules: row.rules || {}, hostId: row.host_id, host, status: row.status,
-    createdAt: row.created_at, members, remote: true
+    createdAt: row.created_at, members, host, remote: true
   };
 }
 
