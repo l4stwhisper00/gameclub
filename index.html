@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b0b14">
+  <meta name="description" content="Настольный клуб — место, где начинаются большие игровые истории.">
+  <title>Настольный клуб — твоя следующая история</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css">
+  <script type="module" src="./js/app.js"></script>
+</head>
+<body>
+  <div class="ambient ambient--one"></div>
+  <div class="ambient ambient--two"></div>
+  <div class="noise"></div>
+  <header class="topbar">
+    <a class="brand" href="#/" aria-label="Настольный клуб — главная">
+      <span class="brand-mark">✦</span>
+      <span class="brand-name">настольный<span>клуб</span></span>
+    </a>
+    <nav class="top-nav" aria-label="Основная навигация">
+      <a href="#/" class="nav-link">Главная</a>
+      <a href="#/games" class="nav-link">Каталог</a>
+      <a href="#/rooms" class="nav-link">Комнаты</a>
+    </nav>
+    <div class="top-actions" id="top-actions">
+      <a class="button button--ghost button--small" href="#/login">Войти</a>
+      <a class="button button--primary button--small" href="#/register">Создать аккаунт <span>↗</span></a>
+    </div>
+  </header>
+  <main id="app" class="app-shell" aria-live="polite">
+    <div class="boot-screen"><span class="loader-orbit"></span><p>Открываем двери таверны…</p></div>
+  </main>
+  <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
