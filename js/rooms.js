@@ -592,7 +592,11 @@ function readableRuleSettings(room) {
 
 async function renderRoom(container, roomId, user, inviteCode = "") {
   await ensurePublicProfile(user);
-  const room = await getOnlineRoom(roomId);
+  let room = await getOnlineRoom(roomId);
+  if (!room && inviteCode) {
+    await joinOnlineRoom(roomId, inviteCode);
+    room = await getOnlineRoom(roomId);
+  }
   if (!room) {
     container.innerHTML = `
       <section class="room-not-found page-enter">
