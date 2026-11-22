@@ -117,7 +117,7 @@ Deno.serve(async (req: Request) => {
       if (existing?.public_state?.status === "active") throw new HttpError(409, "Партия уже идёт.");
       const state = startUno(playerIds);
       const revision = await commitSession(admin, roomId, user.id, existing?.revision ?? -1, state, true);
-      return json({ state: getUnoPublicState(state), hand: getUnoPlayerHand(state, user.id), revision });
+      return json({ state: getUnoPublicState(state), hand: getUnoPlayerHand(state, user.id), privateState: { pendingDrawnCardId: state.pendingDrawnCardId }, revision });
     }
 
     const session = await loadSession(admin, roomId);
@@ -126,6 +126,7 @@ Deno.serve(async (req: Request) => {
       return json({
         state: session.public_state,
         hand: getUnoPlayerHand(session.secret_state, user.id),
+        privateState: { pendingDrawnCardId: session.secret_state.pendingDrawnCardId },
         revision: session.revision
       });
     }
@@ -158,6 +159,7 @@ Deno.serve(async (req: Request) => {
     return json({
       state: getUnoPublicState(nextState),
       hand: getUnoPlayerHand(nextState, user.id),
+      privateState: { pendingDrawnCardId: nextState.pendingDrawnCardId },
       revision
     });
   } catch (error) {
