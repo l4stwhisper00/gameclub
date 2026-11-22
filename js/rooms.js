@@ -36,6 +36,62 @@ function notify(message, type = "success") {
   window.setTimeout(() => toast.remove(), 3500);
 }
 
+function confirmRoomAction({ title, message, confirmLabel = "Подтвердить", danger = false }) {
+  return new Promise((resolve) => {
+    const dialog = document.createElement("dialog");
+    dialog.className = "room-confirm-dialog";
+    dialog.innerHTML = `
+      <div class="room-confirm-dialog__content">
+        <span class="eyebrow">НАСТОЛЬНЫЙ КЛУБ</span>
+        <h2>${escapeHTML(title)}</h2>
+        <p>${escapeHTML(message)}</p>
+        <div class="room-confirm-dialog__actions">
+          <button class="room-button room-button--soft" type="button" data-cancel>Отмена</button>
+          <button class="room-button ${danger ? "room-button--danger" : "room-button--primary"}" type="button" data-confirm>${escapeHTML(confirmLabel)}</button>
+        </div>
+      </div>`;
+    let accepted = false;
+    const finish = () => {
+      dialog.remove();
+      resolve(accepted);
+    };
+    dialog.addEventListener("close", finish, { once: true });
+    dialog.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      dialog.close();
+    });
+    dialog.querySelector("[data-cancel]").addEventListener("click", () => dialog.close());
+    dialog.querySelector("[data-confirm]").addEventListener("click", () => {
+      accepted = true;
+      dialog.close();
+    });
+    document.body.append(dialog);
+    dialog.showModal();
+  });
+}
+
+async function runRoomAction(button, action, successMessage) {
+  if (!button || button.disabled) return false;
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.setAttribute("aria-busy", "true");
+  button.textContent = "Выполняем…";
+  try {
+    await action();
+    if (successMessage) notify(successMessage);
+    return true;
+  } catch (error) {
+    notify(error?.message || "Не удалось выполнить действие. Попробуй ещё раз.", "error");
+    return false;
+  } finally {
+    if (button.isConnected) {
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
+      button.textContent = originalText;
+    }
+  }
+}
+
 function go(hash) {
   if (location.hash === hash) {
     window.dispatchEvent(new HashChangeEvent("hashchange"));
@@ -779,30 +835,42 @@ async function renderRoom(container, roomId, user, inviteCode = "") {
     } catch (error) { notify(error.message, "error"); }
   });
 
-  container.querySelector("#room-start")?.addEventListener("click", async () => {
-    try {
+  container.querySelector("#room-start")?.addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    const started = await runRoomAction(button, async () => {
       await setOnlineRoomStatus(room.id, "playing");
-      notify("Игра началась!");
       await renderRoom(container, room.id, user);
-    } catch (error) { notify(error.message, "error"); }
+    }, "Статус комнаты обновлён.");
+    if (!started && button.isConnected) button.focus();
   });
 
-  container.querySelector("#room-close")?.addEventListener("click", async () => {
-    if (!window.confirm("Завершить комнату? Новые игроки не смогут присоединиться.")) return;
-    try {
+  container.querySelector("#room-close")?.addEventListener("click", async (event) => {
+    const accepted = await confirmRoomAction({
+      title: "Завершить комнату?",
+      message: "Комната станет закрытой. Новые игроки не смогут присоединиться, но ты сможешь удалить её позже.",
+      confirmLabel: "Завершить",
+      danger: false
+    });
+    if (!accepted) return;
+    await runRoomAction(event.currentTarget, async () => {
       await setOnlineRoomStatus(room.id, "closed");
-      notify("Комната завершена.");
       await renderRoom(container, room.id, user);
-    } catch (error) { notify(error.message, "error"); }
+    }, "Комната завершена.");
   });
 
-  container.querySelector("#room-delete")?.addEventListener("click", async () => {
-    if (!window.confirm("Удалить комнату без возможности восстановления?")) return;
-    try {
+  container.querySelector("#room-delete")?.addEventListener("click", async (event) => {
+    const accepted = await confirmRoomAction({
+      title: "Удалить комнату?",
+      message: "Комната, список участников и её сообщения будут удалены без возможности восстановления.",
+      confirmLabel: "Удалить комнату",
+      danger: true
+    });
+    if (!accepted) return;
+    const deleted = await runRoomAction(event.currentTarget, async () => {
       await deleteOnlineRoom(room.id);
-      notify("Комната удалена.");
       go("#/rooms");
-    } catch (error) { notify(error.message, "error"); }
+    }, "Комната удалена.");
+    if (!deleted && event.currentTarget.isConnected) event.currentTarget.focus();
   });
 
   container.querySelectorAll("[data-kick]").forEach((button) => {
