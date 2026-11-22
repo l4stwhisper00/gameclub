@@ -269,14 +269,14 @@ Deno.serve(async (req) => {
       }
       if (!move) throw new HttpError(400, "Такой ход невозможен.");
 
-      let nextState = stateFromChess(state, chess, move.san);
+      let nextState = stateFromChess(state, chess, { san: move.san, from: move.from, to: move.to });
       let saved = await saveState(admin, roomId, nextState, expectedRevision, user.id);
 
       if (state.opponentMode === "bot" && nextState.status === "active" && chess.turn() === "b") {
         const botMove = chooseBotMove(chess, state.botDifficulty);
         if (botMove) {
           const reply = chess.move(botMove);
-          nextState = stateFromChess(nextState, chess, reply.san);
+          nextState = stateFromChess(nextState, chess, { san: reply.san, from: reply.from, to: reply.to });
           saved = await saveState(admin, roomId, nextState, Number(saved.revision), user.id);
         }
       }
