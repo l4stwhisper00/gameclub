@@ -20,7 +20,7 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - name: Type-check engine
-        run: deno check supabase/functions/mafia-game/engine.ts
+      - name: Type-check Edge Function
+        run: deno check supabase/functions/mafia-game/index.ts
       - name: Run Mafia rules tests
         run: deno test supabase/functions/mafia-game/engine.test.ts
