@@ -29,6 +29,12 @@ Deno.test("vote removes a player and ends when bunker capacity is reached", () =
   const target="d";
   for(const id of ["a","b","c"]) state=applyBunkerAction(state,id,{type:"vote",targetId:target});
   state=applyBunkerAction(state,target,{type:"vote",targetId:"a"});
+  assertEquals(state.status,"active");
+  for(const id of state.revealOrder) state=applyBunkerAction(state,id,{type:"reveal",category:"health"});
+  state=applyBunkerAction(state,"a",{type:"start_vote"});
+  const nextTarget=state.players.find((p)=>p.alive && p.id!=="a")!.id;
+  for(const id of state.players.filter((p)=>p.alive && p.id!==nextTarget).map((p)=>p.id)) state=applyBunkerAction(state,id,{type:"vote",targetId:nextTarget});
+  state=applyBunkerAction(state,nextTarget,{type:"vote",targetId:"a"});
   assertEquals(state.status,"finished");
-  assertEquals(state.winnerIds.length,3);
+  assertEquals(state.winnerIds.length,2);
 });
