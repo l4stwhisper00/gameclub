@@ -97,10 +97,10 @@ export function startMafia(playerIds: string[], random: () => number = Math.rand
   const shuffled = shuffle(playerIds, random);
   const mafiaCount = Math.max(1, Math.floor(playerIds.length / 4));
   const roleList: MafiaRole[] = [
-    ...Array(mafiaCount).fill("mafia"),
+    ...Array<MafiaRole>(mafiaCount).fill("mafia"),
     "doctor",
     "detective",
-    ...Array(playerIds.length - mafiaCount - 2).fill("civilian")
+    ...Array<MafiaRole>(playerIds.length - mafiaCount - 2).fill("civilian")
   ];
   const roleOrder = shuffle(roleList, random);
   const roles: Record<string, MafiaRole> = {};
@@ -123,6 +123,7 @@ export function applyMafiaAction(source: MafiaState, playerId: string, action: M
   if (action.type === "mafia_vote") {
     if (state.phase !== "night_mafia" || role !== "mafia") throw new Error("Сейчас голосует только живая мафия.");
     if (!state.alive.includes(action.targetId) || state.roles[action.targetId] === "mafia") throw new Error("Мафия может выбрать только живого игрока не из мафии.");
+    if (state.mafiaVotes[playerId]) throw new Error("Ты уже проголосовал этой ночью.");
     state.mafiaVotes[playerId] = action.targetId;
     const mafia = livingRole(state, "mafia");
     if (mafia.every((id) => state.mafiaVotes[id])) {
