@@ -388,7 +388,8 @@ function renderGameRuleFields(game) {
       <div class="room-form-grid">
         <div class="room-form-field">
           <label for="rule-time-control">КОНТРОЛЬ ВРЕМЕНИ</label>
-          <select class="room-input" id="rule-time-control" name="timeControl"><option value="Без таймера">Без таймера</option><option value="3+2">3 + 2</option><option value="5+0">5 минут</option><option value="10+0">10 минут</option><option value="15+10">15 + 10</option></select>
+          <select class="room-input" id="rule-time-control" name="timeControl"><option value="Без таймера">Без таймера</option></select>
+          <small class="room-field-hint">Игровые часы добавим отдельным обновлением; сейчас партия идёт без таймера.</small>
         </div>
         <div class="room-form-field">
           <label for="rule-chess-opponent">СОПЕРНИК</label>
