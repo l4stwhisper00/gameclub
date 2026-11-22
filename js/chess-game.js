@@ -55,7 +55,7 @@ export async function renderChessGame(container, room, user) {
           <div class="chess-game__turn" id="chess-turn" aria-live="polite">Загружаем позицию…</div>
           <div class="chess-game__last" id="chess-last">Партия синхронизируется между участниками.</div>
           <div class="chess-game__moves"><h3>Ходы</h3><ol id="chess-moves"><li>Партия ещё не началась</li></ol></div>
-          <button class="room-button room-button--soft room-button--full" type="button" id="chess-resign">Сдаться</button>
+          <button class="room-button room-button--soft room-button--full" type="button" id="chess-resign" hidden>Сдаться</button>
         </aside>
       </div>
       <p class="chess-game__notice" id="chess-notice" role="status"></p>
