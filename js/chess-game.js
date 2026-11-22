@@ -1,5 +1,6 @@
 import { Chess } from "https://esm.sh/chess.js@1.4.0";
 import { supabase } from "./supabase.js";
+import { leaveOnlineRoom } from "./online-rooms.js";
 
 const PIECES = {
   wp: "♙", wn: "♘", wb: "♗", wr: "♖", wq: "♕", wk: "♔",
@@ -175,6 +176,99 @@ export async function renderChessGame(container, room, user) {
     }
     resignButton.hidden = gameState.status !== "active" || (gameState.whiteUserId !== user.id && gameState.blackUserId !== user.id);
     noticeElement.textContent = "";
+    renderResultPanel();
+  }
+
+  function resultDetails() {
+    const outcome = gameState?.outcome || {};
+    const myColor = gameState?.whiteUserId === user.id ? "white"
+      : gameState?.blackUserId === user.id ? "black" : null;
+    if (outcome.status === "draw") {
+      return { title: "НИЧЬЯ", subtitle: "На этот раз победителя нет.", kind: "draw" };
+    }
+    const won = Boolean(myColor && outcome.winner === myColor);
+    let reason = "Партия завершена.";
+    if (outcome.status === "checkmate") reason = "Мат — король соперника не смог избежать поражения.";
+    else if (outcome.status === "resignation") reason = won ? "Соперник сдался." : "Ты сдал партию.";
+    return {
+      title: won ? "ПОБЕДА!" : "ПОРАЖЕНИЕ",
+      subtitle: reason,
+      kind: won ? "win" : "loss"
+    };
+  }
+
+  function renderResultPanel() {
+    const existing = container.querySelector(".chess-result");
+    if (gameState?.status !== "finished") {
+      existing?.remove();
+      return;
+    }
+    const result = resultDetails();
+    const panel = document.createElement("section");
+    panel.className = `chess-result chess-result--${result.kind}`;
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-modal", "true");
+    panel.setAttribute("aria-labelledby", "chess-result-title");
+    panel.innerHTML = `
+      <div class="chess-result__card">
+        <span class="eyebrow">ПАРТИЯ ЗАВЕРШЕНА</span>
+        <div class="chess-result__symbol" aria-hidden="true">${result.kind === "win" ? "♛" : result.kind === "loss" ? "♟" : "½"}</div>
+        <h2 id="chess-result-title">${result.title}</h2>
+        <p>${escapeHTML(result.subtitle)}</p>
+        <div class="chess-result__actions">
+          ${room.hostId === user.id ? '<button class="room-button room-button--primary" type="button" data-chess-replay>Сыграть ещё раз</button>' : '<p class="chess-result__hint">Новая партия доступна ведущему комнаты.</p>'}
+          <button class="room-button room-button--soft" type="button" data-chess-leave>${room.hostId === user.id ? "К списку комнат" : "Покинуть комнату"}</button>
+        </div>
+      </div>`;
+    existing?.replaceWith(panel);
+    if (!existing) container.querySelector(".chess-game")?.append(panel);
+
+    panel.querySelector("[data-chess-replay]")?.addEventListener("click", async (event) => {
+      const button = event.currentTarget;
+      if (busy) return;
+      busy = true;
+      button.disabled = true;
+      button.textContent = "Запускаем…";
+      try {
+        const data = await invokeChess({
+          action: "start",
+          room_id: room.id,
+          opponent_mode: gameState.opponentMode,
+          bot_difficulty: gameState.botDifficulty || "medium"
+        });
+        gameState = data.state;
+        revision = Number(data.revision);
+        selectedSquare = null;
+        render();
+      } catch (error) {
+        noticeElement.textContent = error.message;
+        button.disabled = false;
+        button.textContent = "Сыграть ещё раз";
+      } finally {
+        busy = false;
+        render();
+      }
+    });
+
+    panel.querySelector("[data-chess-leave]")?.addEventListener("click", async (event) => {
+      const button = event.currentTarget;
+      if (busy) return;
+      busy = true;
+      button.disabled = true;
+      button.textContent = "Выходим…";
+      try {
+        // The room owner cannot leave their own room under the existing
+        // membership rules; they can return to the room directory instead.
+        if (room.hostId !== user.id) await leaveOnlineRoom(room.id);
+        window.location.hash = "#/rooms";
+      } catch (error) {
+        noticeElement.textContent = error.message;
+        button.disabled = false;
+        button.textContent = "Покинуть комнату";
+      } finally {
+        busy = false;
+      }
+    });
   }
 
   async function loadState() {
