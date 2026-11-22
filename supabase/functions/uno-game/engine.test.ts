@@ -1,4 +1,4 @@
-import { assertEquals, assertNotEquals, assertThrows } from "jsr:@std/assert@1";
+import { assertEquals, assertThrows } from "jsr:@std/assert@1";
 import {
   applyUnoAction,
   createUnoDeck,
@@ -108,4 +108,38 @@ Deno.test("reverse changes turn direction for three players", () => {
   const next = applyUnoAction(state, "a", { type: "play", cardId: "reverse" });
   assertEquals(next.direction, -1);
   assertEquals(next.players[next.currentPlayerIndex], "c");
+});
+
+Deno.test("UNO can be called in the catch window after the player turn advances", () => {
+  const state = stateWith(
+    [
+      { id: "a1", color: "red", kind: "number", value: 3 },
+      { id: "a2", color: "blue", kind: "number", value: 6 }
+    ],
+    [{ id: "b1", color: "red", kind: "number", value: 5 }]
+  );
+  const played = applyUnoAction(state, "a", { type: "play", cardId: "a1" });
+  assertEquals(played.currentPlayerIndex, 1);
+  assertEquals(played.unoPenaltyPlayerId, "a");
+  const called = applyUnoAction(played, "a", { type: "call_uno" });
+  assertEquals(called.unoPenaltyPlayerId, null);
+  assertThrows(() => applyUnoAction(called, "b", { type: "catch_uno" }));
+});
+
+Deno.test("the next player can catch an uncalled UNO and draw a penalty", () => {
+  const state = stateWith(
+    [
+      { id: "a1", color: "red", kind: "number", value: 3 },
+      { id: "a2", color: "blue", kind: "number", value: 6 }
+    ],
+    [{ id: "b1", color: "red", kind: "number", value: 5 }]
+  );
+  state.drawPile = [
+    { id: "draw1", color: "green", kind: "number", value: 1 },
+    { id: "draw2", color: "yellow", kind: "number", value: 2 }
+  ];
+  const played = applyUnoAction(state, "a", { type: "play", cardId: "a1" });
+  const caught = applyUnoAction(played, "b", { type: "catch_uno" });
+  assertEquals(caught.hands.a.length, 3);
+  assertEquals(caught.unoPenaltyPlayerId, null);
 });
