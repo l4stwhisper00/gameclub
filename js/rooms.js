@@ -8,6 +8,7 @@ import { renderChessGame, startOnlineChessGame } from "./chess-game.js";
 import { renderUnoGame, startOnlineUnoGame } from "./uno-game.js";
 import { renderCodenamesGame, startOnlineCodenamesGame } from "./codenames-game.js";
 import { renderMafiaGame, startOnlineMafiaGame } from "./mafia-game.js";
+import { renderDndGame, startOnlineDndGame } from "./dnd-game.js";
 import { renderGameTable } from "./game-table.js";
 import { ensurePublicProfile, listOnlineRooms, getOnlineRoom, createOnlineRoom, joinOnlineRoom, leaveOnlineRoom, setOnlineRoomStatus, removeOnlineRoomMember, deleteOnlineRoom } from "./online-rooms.js";
 let onlineRoomsCache = [];
@@ -803,6 +804,7 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
   const canStartUno = game.id === "uno" && members.length >= 2 && members.length <= 10;
   const canStartCodenames = game.id === "codenames" && members.length >= 2 && members.length <= 8;
   const canStartMafia = game.id === "mafia" && members.length >= 5 && members.length <= 12;
+  const canStartDnd = game.id === "dnd-5e" && members.length >= 1 && members.length <= 8;
   const [tone, glow] = game.palette;
 
   container.innerHTML = `
@@ -862,7 +864,7 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
           <section class="room-panel room-host-panel">
             <span class="eyebrow">ВЕДУЩИЙ ВСТРЕЧИ</span>
             <div class="room-host-identity">${avatar(host, "room-avatar room-avatar--host")}<div><strong>${escapeHTML(host?.username || "Неизвестный игрок")}</strong><span>Создатель комнаты</span></div></div>
-            ${isHost ? `<div class="room-host-tools"><p>Ты управляешь этой комнатой.</p>${room.status === "open" && game.id === "chess" ? `<button class="room-button room-button--primary room-button--full" type="button" id="room-start" ${canStartChess ? "" : "disabled"}>Начать шахматы</button>${canStartChess ? "" : `<p class="room-detail-hint">Для игры с человеком нужен второй участник. Чтобы играть одному, выбери бота в настройках комнаты.</p>`}` : ""}${room.status === "open" && game.id === "uno" ? `<button class="room-button room-button--primary room-button--full" type="button" id="room-start-uno" ${canStartUno ? "" : "disabled"}>Начать Уно</button>${canStartUno ? "" : `<p class="room-detail-hint">Для Уно нужно от 2 до 10 участников.</p>`}` : ""}${room.status === "open" && game.id === "codenames" ? `<button class="room-button room-button--primary room-button--full" type="button" id="room-start-codenames" ${canStartCodenames ? "" : "disabled"}>Начать Кодовые имена</button>${canStartCodenames ? "" : `<p class="room-detail-hint">Для Кодовых имён нужно от 2 до 8 участников.</p>`}` : ""}${room.status === "open" && game.id === "mafia" ? `<button class="room-button room-button--primary room-button--full" type="button" id="room-start-mafia" ${canStartMafia ? "" : "disabled"}>Начать Мафию</button>${canStartMafia ? "" : `<p class="room-detail-hint">Для Мафии нужно от 5 до 12 участников.</p>`}` : ""}${room.status === "open" && game.id !== "chess" && game.id !== "uno" && game.id !== "codenames" && game.id !== "mafia" ? `<p class="room-detail-hint">Игровой движок этой игры ещё подключается. Комната, участники и чат уже доступны.</p>` : ""}${room.status === "playing" ? `<button class="room-button room-button--primary room-button--full" type="button" id="room-finish-game">Завершить партию · вернуться в лобби</button>` : ""}${room.status !== "closed" ? `<button class="room-button room-button--soft room-button--full" type="button" id="room-close">Закрыть комнату</button>` : `<button class="room-button room-button--soft room-button--full" type="button" id="room-reopen">Вернуть в лобби</button>`}<button class="room-button room-button--danger room-button--full" type="button" id="room-delete">Удалить комнату</button></div>` : `<p class="room-detail-hint">Роль: ${member ? member.role === "host" ? "ведущий" : "игрок" : "гость"}. По вопросам встречи обратись к ведущему.</p>`}
+            ${isHost ? `<div class="room-host-tools"><p>Ты управляешь этой комнатой.</p>${room.status === "open" && game.id === "chess" ? `<button class="room-button room-button--primary room-button--full" type="button" id="room-start" ${canStartChess ? "" : "disabled"}>Начать шахматы</button>${canStartChess ? "" : `<p class="room-detail-hint">Для игры с человеком нужен второй участник. Чтобы играть одному, выбери бота в настройках комнаты.</p>`}` : ""}${room.status === "open" && game.id === "uno" ? `<button class="room-button room-button--primary room-button--full" type="button" id="room-start-uno" ${canStartUno ? "" : "disabled"}>Начать Уно</button>${canStartUno ? "" : `<p class="room-detail-hint">Для Уно нужно от 2 до 10 участников.</p>`}` : ""}${room.status === "open" && game.id === "codenames" ? `<button class="room-button room-button--primary room-button--full" type="button" id="room-start-codenames" ${canStartCodenames ? "" : "disabled"}>Начать Кодовые имена</button>${canStartCodenames ? "" : `<p class="room-detail-hint">Для Кодовых имён нужно от 2 до 8 участников.</p>`}` : ""}${room.status === "open" && game.id === "mafia" ? `<button class="room-button room-button--primary room-button--full" type="button" id="room-start-mafia" ${canStartMafia ? "" : "disabled"}>Начать Мафию</button>${canStartMafia ? "" : `<p class="room-detail-hint">Для Мафии нужно от 5 до 12 участников.</p>`}` : ""}${room.status === "open" && game.id === "dnd-5e" ? `<button class="room-button room-button--primary room-button--full" type="button" id="room-start-dnd" ${canStartDnd ? "" : "disabled"}>Открыть кампанию D&D</button>${canStartDnd ? "" : `<p class="room-detail-hint">Для кампании нужно от 1 до 8 участников.</p>`}` : ""}${room.status === "open" && game.id !== "chess" && game.id !== "uno" && game.id !== "codenames" && game.id !== "mafia" && game.id !== "dnd-5e" ? `<p class="room-detail-hint">Игровой движок этой игры ещё подключается. Комната, участники и чат уже доступны.</p>` : ""}${room.status === "playing" ? `<button class="room-button room-button--primary room-button--full" type="button" id="room-finish-game">Завершить партию · вернуться в лобби</button>` : ""}${room.status !== "closed" ? `<button class="room-button room-button--soft room-button--full" type="button" id="room-close">Закрыть комнату</button>` : `<button class="room-button room-button--soft room-button--full" type="button" id="room-reopen">Вернуть в лобби</button>`}<button class="room-button room-button--danger room-button--full" type="button" id="room-delete">Удалить комнату</button></div>` : `<p class="room-detail-hint">Роль: ${member ? member.role === "host" ? "ведущий" : "игрок" : "гость"}. По вопросам встречи обратись к ведущему.</p>`}
           </section>
           <section class="room-panel room-invite-panel">
             <span class="eyebrow">ПРИГЛАСИ ДРУЗЕЙ</span>
@@ -919,7 +921,9 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
     activeGameCleanup = renderCodenamesGame(gameMount, room, user);
   } else if (game.id === "mafia" && room.status === "playing" && gameMount) {
     activeGameCleanup = renderMafiaGame(gameMount, room, user);
-  } else if (game.id !== "chess" && game.id !== "uno" && game.id !== "codenames" && game.id !== "mafia" && gameMount) {
+  } else if (game.id === "dnd-5e" && room.status === "playing" && gameMount) {
+    activeGameCleanup = renderDndGame(gameMount, room, user);
+  } else if (game.id !== "chess" && game.id !== "uno" && game.id !== "codenames" && game.id !== "mafia" && game.id !== "dnd-5e" && gameMount) {
     renderGameTable(gameMount, room, game, user);
   }
   if (renderSequence !== roomRenderSequence) return;
@@ -958,6 +962,16 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
       notify("Ты покинул комнату.");
       go("#/rooms");
     } catch (error) { notify(error.message, "error"); }
+  });
+
+  container.querySelector("#room-start-dnd")?.addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    const started = await runRoomAction(button, async () => {
+      stopRoomRealtime();
+      await startOnlineDndGame(room);
+      await renderRoom(container, room.id, user, "", renderSequence);
+    }, "Кампания D&D открыта.");
+    if (!started && button.isConnected) button.focus();
   });
 
   container.querySelector("#room-start-mafia")?.addEventListener("click", async (event) => {
