@@ -34,6 +34,7 @@ export function applyCrocodileAction(source:CrocodileState,playerId:string,actio
  if(action.type==="skip"){if(state.currentActorId!==playerId)throw new Error("Пропустить слово может только показывающий.");state.lastEvent="Слово пропущено.";advance(state,random);return state;}
  if(action.type==="guess"){
    if(state.currentActorId===playerId)throw new Error("Показывающий не может угадывать своё слово.");
+   if(state.teams[playerId]!==state.teams[state.currentActorId])throw new Error("Угадывать может только команда показывающего.");
    const normalize=(value:string)=>String(value||"").trim().toLocaleLowerCase().replace(/ё/g,"е").replace(/[!?.,]/g,"").replace(/\s+/g," ");
    if(normalize(action.guess)!==normalize(state.words[state.wordIndex].word)){state.lastEvent="Ответ не совпал. Продолжайте угадывать.";return state;}
    const team=state.teams[state.currentActorId];state.scores[team]+=1;
