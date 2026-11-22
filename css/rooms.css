@@ -513,3 +513,12 @@ html[data-theme="sakura"] .room-panel .room-rules-list .room-rule-row {
     flex-basis:48%;
   }
 }
+
+
+/* Large games use a wide play-room canvas; small games keep the compact layout. */
+.room-detail-page--large-game {max-width:1440px}
+.room-detail-page--large-game .room-detail-grid {grid-template-columns:minmax(0,1fr)}
+.room-detail-page--large-game .room-detail-main {display:contents}
+.room-detail-page--large-game #room-game-mount {grid-row:1}
+.room-detail-page--large-game .room-detail-aside {grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:560px){.room-detail-page--large-game .room-detail-aside{grid-template-columns:1fr}}
