@@ -5,6 +5,7 @@ import { GAMES, getGameById } from "./games.js";
 import { renderRoomChat, addRoomSystemMessage } from "./chat.js";
 import { renderGameRules } from "./game-rules.js";
 import { renderChessGame, startOnlineChessGame } from "./chess-game.js";
+import { renderGameTable } from "./game-table.js";
 import { ensurePublicProfile, listOnlineRooms, getOnlineRoom, createOnlineRoom, joinOnlineRoom, leaveOnlineRoom, setOnlineRoomStatus, removeOnlineRoomMember, deleteOnlineRoom } from "./online-rooms.js";
 let onlineRoomsCache = [];
 
@@ -79,6 +80,30 @@ async function runRoomAction(button, action, successMessage) {
   button.setAttribute("aria-busy", "true");
   button.textContent = "Выполняем…";
   try {
+    await action();
+    if (successMessage) notify(successMessage);
+    return true;
+  } catch (error) {
+    notify(error?.message || "Не удалось выполнить действие. Попробуй ещё раз.", "error");
+    return false;
+  } finally {
+    if (button.isConnected) {
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
+      button.textContent = originalText;
+    }
+  }
+}
+
+async function confirmAndRunRoomAction(button, options, action, successMessage, renderSequence) {
+  if (!button || button.disabled || !button.isConnected) return false;
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.setAttribute("aria-busy", "true");
+  try {
+    const accepted = await confirmRoomAction(options);
+    if (!accepted || renderSequence !== roomRenderSequence || !button.isConnected) return false;
+    button.textContent = "Выполняем…";
     await action();
     if (successMessage) notify(successMessage);
     return true;
@@ -795,9 +820,9 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
 
       <div class="room-detail-grid">
         <div class="room-detail-main">
-          ${room.status === "playing" ? (game.id === "chess"
-            ? `<div id="room-game-mount"></div>`
-            : `<section class="room-panel room-game-coming"><span class="eyebrow">ИГРОВОЙ СТОЛ</span><h2>${escapeHTML(game.title)}</h2><p>Интерактивный интерфейс этой игры пока не подключён. Комната, участники и чат продолжают работать.</p></section>`) : ""}
+          ${game.id === "chess"
+            ? (room.status === "playing" ? `<div id="room-game-mount"></div>` : "")
+            : `<div id="room-game-mount"></div>`}
           <section class="room-panel">
             <div class="room-panel__heading"><div><span class="eyebrow">КОМАНДА</span><h2>Участники</h2></div><span class="room-member-count">${members.length}/${room.maxPlayers}</span></div>
             <div class="room-members">
@@ -874,13 +899,13 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
 
   const chatMount = container.querySelector("#room-chat-mount");
   if (chatMount) renderRoomChat(chatMount, room, user);
-  if (room.status === "playing" && game.id === "chess") {
-    const gameMount = container.querySelector("#room-game-mount");
-    if (gameMount) {
-      const cleanup = await renderChessGame(gameMount, room, user);
-      if (renderSequence !== roomRenderSequence) cleanup();
-      else activeChessCleanup = cleanup;
-    }
+  const gameMount = container.querySelector("#room-game-mount");
+  if (game.id === "chess" && room.status === "playing" && gameMount) {
+    const cleanup = await renderChessGame(gameMount, room, user);
+    if (renderSequence !== roomRenderSequence) cleanup();
+    else activeChessCleanup = cleanup;
+  } else if (game.id !== "chess" && gameMount) {
+    renderGameTable(gameMount, room, game, user);
   }
   if (renderSequence !== roomRenderSequence) return;
 
@@ -932,33 +957,29 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
 
   container.querySelector("#room-finish-game")?.addEventListener("click", async (event) => {
     const button = event.currentTarget;
-    const accepted = await confirmRoomAction({
+    await confirmAndRunRoomAction(button, {
       title: "Завершить партию?",
       message: "Игра закончится, а комната вернётся в лобби. Участники и чат останутся на месте.",
       confirmLabel: "Завершить партию"
-    });
-    if (!accepted) return;
-    await runRoomAction(button, async () => {
+    }, async () => {
       stopRoomRealtime();
       await setOnlineRoomStatus(room.id, "open");
-      await renderRoom(container, room.id, user);
-    }, "Партия завершена. Комната снова в лобби.");
+      await renderRoom(container, room.id, user, "", renderSequence);
+    }, "Партия завершена. Комната снова в лобби.", renderSequence);
   });
 
   container.querySelector("#room-close")?.addEventListener("click", async (event) => {
     const button = event.currentTarget;
-    const accepted = await confirmRoomAction({
+    await confirmAndRunRoomAction(button, {
       title: "Закрыть комнату?",
       message: "Комната станет недоступна для новых игроков. Ты сможешь вернуть её в лобби или удалить позже.",
       confirmLabel: "Закрыть комнату",
       danger: false
-    });
-    if (!accepted) return;
-    await runRoomAction(button, async () => {
+    }, async () => {
       stopRoomRealtime();
       await setOnlineRoomStatus(room.id, "closed");
-      await renderRoom(container, room.id, user);
-    }, "Комната завершена.");
+      await renderRoom(container, room.id, user, "", renderSequence);
+    }, "Комната завершена.", renderSequence);
   });
 
   container.querySelector("#room-reopen")?.addEventListener("click", async (event) => {
@@ -970,19 +991,16 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
 
   container.querySelector("#room-delete")?.addEventListener("click", async (event) => {
     const button = event.currentTarget;
-    const accepted = await confirmRoomAction({
+    await confirmAndRunRoomAction(button, {
       title: "Удалить комнату?",
       message: "Комната, список участников и её сообщения будут удалены без возможности восстановления.",
       confirmLabel: "Удалить комнату",
       danger: true
-    });
-    if (!accepted) return;
-    const deleted = await runRoomAction(button, async () => {
+    }, async () => {
       stopRoomRealtime();
       await deleteOnlineRoom(room.id);
       go("#/rooms");
-    }, "Комната удалена.");
-    if (!deleted && button.isConnected) button.focus();
+    }, "Комната удалена.", renderSequence);
   });
 
   container.querySelectorAll("[data-kick]").forEach((button) => {

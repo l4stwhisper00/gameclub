@@ -57,7 +57,7 @@ export async function renderChessGame(container, room, user) {
           <div class="chess-game__turn" id="chess-turn" aria-live="polite">Загружаем позицию…</div>
           <div class="chess-game__last" id="chess-last">Партия синхронизируется между участниками.</div>
           <div class="chess-game__moves"><h3>Ходы</h3><ol id="chess-moves"><li>Партия ещё не началась</li></ol></div>
-          <button class="room-button room-button--soft room-button--full" type="button" id="chess-resign" hidden>Сдаться</button>
+          <button class="room-button room-button--soft room-button--full" type="button" id="chess-resign" hidden>Сдаться и завершить партию</button>
         </aside>
       </div>
       <p class="chess-game__notice" id="chess-notice" role="status"></p>
@@ -195,7 +195,7 @@ export async function renderChessGame(container, room, user) {
       return;
     }
     initButton.hidden = true;
-    if (Number(data.revision) < revision) return;
+    if (Number(data.revision) <= revision) return;
     gameState = data.state;
     revision = Number(data.revision);
     selectedSquare = null;
@@ -235,7 +235,7 @@ export async function renderChessGame(container, room, user) {
   async function submitMove(from, to, promotion = "q") {
     if (!gameState || busy) return;
     busy = true;
-    noticeElement.textContent = "Передаём ход…";
+    noticeElement.textContent = "Ход отправлен. Ждём подтверждение сервера…";
     try {
       const data = await invokeChess({
         action: "move",
