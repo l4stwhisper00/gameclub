@@ -56,6 +56,7 @@ export function renderUnoGame(container, room, user) {
   let state = null;
   let hand = [];
   let revision = -1;
+  let pendingDrawnCardId = null;
   let busy = false;
   let disposed = false;
   let channel = null;
@@ -78,7 +79,7 @@ export function renderUnoGame(container, room, user) {
     const canCatch = isTurn && penalty && penalty !== user.id;
     const canCall = penalty === user.id;
     const playable = (card) => {
-      if (state.pendingDrawnCardId && state.pendingDrawnCardId !== card.id) return false;
+      if (pendingDrawnCardId && pendingDrawnCardId !== card.id) return false;
       if (!topCard) return true;
       return card.kind === "wild" || card.kind === "wild4" || card.color === state.currentColor || card.value === topCard.value;
     };
@@ -131,8 +132,8 @@ export function renderUnoGame(container, room, user) {
         </div>
         <footer class="uno-game__controls">
           <div class="uno-game__actions">
-            <button class="uno-action uno-action--draw" type="button" data-uno-action="draw" ${!isTurn || state.pendingDrawnCardId || busy || isFinished ? "disabled" : ""}>＋ Взять карту</button>
-            <button class="uno-action" type="button" data-uno-action="pass" ${!isTurn || !state.pendingDrawnCardId || busy ? "disabled" : ""}>Пропустить ход</button>
+            <button class="uno-action uno-action--draw" type="button" data-uno-action="draw" ${!isTurn || pendingDrawnCardId || busy || isFinished ? "disabled" : ""}>＋ Взять карту</button>
+            <button class="uno-action" type="button" data-uno-action="pass" ${!isTurn || !pendingDrawnCardId || busy ? "disabled" : ""}>Пропустить ход</button>
             <button class="uno-action uno-action--uno" type="button" data-uno-action="call_uno" ${!canCall || busy ? "disabled" : ""}>UNO!</button>
             <button class="uno-action uno-action--catch" type="button" data-uno-action="catch_uno" ${!canCatch || busy ? "disabled" : ""}>Поймать на UNO</button>
           </div>
@@ -148,6 +149,7 @@ export function renderUnoGame(container, room, user) {
       if (disposed || Number(data.revision) < revision) return;
       state = data.state;
       hand = data.hand || [];
+      pendingDrawnCardId = data.privateState?.pendingDrawnCardId || null;
       revision = Number(data.revision);
       notice = "";
       render();
@@ -182,6 +184,7 @@ export function renderUnoGame(container, room, user) {
       if (Number(data.revision) >= revision) {
         state = data.state;
         hand = data.hand || [];
+        pendingDrawnCardId = data.privateState?.pendingDrawnCardId || null;
         revision = Number(data.revision);
       }
       notice = "Ход сохранён.";
