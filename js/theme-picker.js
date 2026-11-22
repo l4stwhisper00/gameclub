@@ -49,12 +49,14 @@ function setTheme(id, persist = true) {
 
 function closeDrawer() {
   drawer?.classList.remove("is-open");
+  drawer?.setAttribute("aria-hidden", "true");
   trigger?.setAttribute("aria-expanded", "false");
   document.body.classList.remove("theme-drawer-open");
 }
 
 function openDrawer() {
   drawer?.classList.add("is-open");
+  drawer?.setAttribute("aria-hidden", "false");
   trigger?.setAttribute("aria-expanded", "true");
   document.body.classList.add("theme-drawer-open");
   drawer?.querySelector("[data-theme-choice]")?.focus({ preventScroll: true });
@@ -122,10 +124,6 @@ function mountThemePicker() {
   document.addEventListener("pointerdown", event => {
     if (drawer.classList.contains("is-open") && !drawer.contains(event.target) && !trigger.contains(event.target)) closeDrawer();
   });
-  drawer.addEventListener("transitionend", () => {
-    drawer.setAttribute("aria-hidden", String(!drawer.classList.contains("is-open")));
-  });
-
   let saved = "classic";
   try { saved = localStorage.getItem(STORAGE_KEY) || "classic"; } catch { /* Keep the default. */ }
   setTheme(saved, false);
