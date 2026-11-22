@@ -786,3 +786,32 @@ html[data-theme="classic"] .button--ghost,html[data-theme="dynamic"] .button--gh
   color:var(--theme-text)!important;border-color:var(--theme-line)!important;
   background:rgba(8,12,20,.42)!important;
 }
+
+
+/* Dark-only theme collection: the old light Cozy option is intentionally retired. */
+.theme-preview--sakura { --preview-bg:#35232f;--preview-text:#f6eaf0;--preview-accent:#d58aa5;--preview-glow:radial-gradient(ellipse at 78% 28%,#765064,transparent 62%); }
+:root[data-theme="sakura"] {
+ color-scheme:dark;--theme-bg:#2c1d29;--theme-panel:rgba(47,31,43,.97);--theme-card:#402b39;
+ --theme-line:rgba(213,138,165,.28);--theme-text:#f7eaf0;--theme-muted:#c9aab9;
+ --theme-accent:#d58aa5;--theme-glow:radial-gradient(ellipse at 78% 24%,rgba(160,91,119,.22),transparent 48%);
+}
+:root[data-theme="sakura"] body { color:#f7eaf0;background:linear-gradient(90deg,rgba(40,27,39,.72),rgba(48,31,44,.43) 55%,rgba(40,27,39,.20)),url("../assets/theme-backgrounds/sakura.svg") center 46%/cover fixed no-repeat!important; }
+:root[data-theme="sakura"] .topbar { color:#f7eaf0;background:rgba(39,26,37,.94); }
+:root[data-theme="sakura"] .home-hero::after { background:radial-gradient(ellipse at 82% 22%,rgba(184,112,139,.18),transparent 58%); }
+:root[data-theme="sakura"] .hero-glyph { background:radial-gradient(circle,#765064,#35232f 72%); }
+:root[data-theme="sakura"] .theme-preview--sakura { color:#f7eaf0; }
+html[data-theme="sakura"] .profile-card,html[data-theme="sakura"] .auth-card,
+html[data-theme="sakura"] .feature-tile,html[data-theme="sakura"] .settings-form-card {
+ background:rgba(47,31,43,.94)!important;color:#f7eaf0!important;
+}
+html[data-theme="sakura"] .profile-meta,html[data-theme="sakura"] .form-input,
+html[data-theme="sakura"] input,html[data-theme="sakura"] textarea,html[data-theme="sakura"] select {
+ background:#382637!important;color:#f7eaf0!important;border-color:rgba(213,138,165,.3)!important;
+}
+html[data-theme="sakura"] .button--primary,html[data-theme="sakura"] .room-button--primary {
+ color:#291a25!important;background:linear-gradient(115deg,#d58aa5,#b66d8a)!important;
+ box-shadow:0 8px 24px rgba(181,102,137,.24),inset 0 1px rgba(255,255,255,.18)!important;
+}
+html[data-theme="sakura"] .button--ghost,html[data-theme="sakura"] .room-button--soft {
+ color:#f7eaf0!important;background:rgba(61,39,55,.88)!important;border-color:rgba(213,138,165,.34)!important;
+}
