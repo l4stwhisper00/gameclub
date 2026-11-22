@@ -1,6 +1,5 @@
 -- Tighten legacy helper RPC visibility and avoid per-row auth.uid() calls in legacy RLS.
 revoke execute on function public.handle_new_user() from public, anon;
-grant execute on function public.handle_new_user() to authenticated;
 grant execute on function public.handle_new_user() to supabase_auth_admin;
 
 revoke execute on function public.is_room_member(uuid) from public, anon;
