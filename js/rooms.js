@@ -770,7 +770,7 @@ async function renderRoom(container, roomId, user, inviteCode = "") {
           <section class="room-panel room-host-panel">
             <span class="eyebrow">ВЕДУЩИЙ ВСТРЕЧИ</span>
             <div class="room-host-identity">${avatar(host, "room-avatar room-avatar--host")}<div><strong>${escapeHTML(host?.username || "Неизвестный игрок")}</strong><span>Создатель комнаты</span></div></div>
-            ${isHost ? `<div class="room-host-tools"><p>Ты управляешь этой комнатой.</p>${room.status === "open" ? `<button class="room-button room-button--primary room-button--full" type="button" id="room-start">Начать игру</button>` : ""}${room.status !== "closed" ? `<button class="room-button room-button--soft room-button--full" type="button" id="room-close">Завершить комнату</button>` : ""}<button class="room-button room-button--danger room-button--full" type="button" id="room-delete">Удалить комнату</button></div>` : `<p class="room-detail-hint">Роль: ${member ? member.role === "host" ? "ведущий" : "игрок" : "гость"}. По вопросам встречи обратись к ведущему.</p>`}
+            ${isHost ? `<div class="room-host-tools"><p>Ты управляешь этой комнатой.</p>${room.status === "open" ? `<button class="room-button room-button--primary room-button--full" type="button" id="room-start">Начать игру</button>` : ""}${room.status === "playing" ? `<button class="room-button room-button--primary room-button--full" type="button" id="room-finish-game">Завершить партию · вернуться в лобби</button>` : ""}${room.status !== "closed" ? `<button class="room-button room-button--soft room-button--full" type="button" id="room-close">Закрыть комнату</button>` : `<button class="room-button room-button--soft room-button--full" type="button" id="room-reopen">Вернуть в лобби</button>`}<button class="room-button room-button--danger room-button--full" type="button" id="room-delete">Удалить комнату</button></div>` : `<p class="room-detail-hint">Роль: ${member ? member.role === "host" ? "ведущий" : "игрок" : "гость"}. По вопросам встречи обратись к ведущему.</p>`}
           </section>
           <section class="room-panel room-invite-panel">
             <span class="eyebrow">ПРИГЛАСИ ДРУЗЕЙ</span>
@@ -844,11 +844,24 @@ async function renderRoom(container, roomId, user, inviteCode = "") {
     if (!started && button.isConnected) button.focus();
   });
 
+  container.querySelector("#room-finish-game")?.addEventListener("click", async (event) => {
+    const accepted = await confirmRoomAction({
+      title: "Завершить партию?",
+      message: "Игра закончится, а комната вернётся в лобби. Участники и чат останутся на месте.",
+      confirmLabel: "Завершить партию"
+    });
+    if (!accepted) return;
+    await runRoomAction(event.currentTarget, async () => {
+      await setOnlineRoomStatus(room.id, "open");
+      await renderRoom(container, room.id, user);
+    }, "Партия завершена. Комната снова в лобби.");
+  });
+
   container.querySelector("#room-close")?.addEventListener("click", async (event) => {
     const accepted = await confirmRoomAction({
-      title: "Завершить комнату?",
-      message: "Комната станет закрытой. Новые игроки не смогут присоединиться, но ты сможешь удалить её позже.",
-      confirmLabel: "Завершить",
+      title: "Закрыть комнату?",
+      message: "Комната станет недоступна для новых игроков. Ты сможешь вернуть её в лобби или удалить позже.",
+      confirmLabel: "Закрыть комнату",
       danger: false
     });
     if (!accepted) return;
@@ -856,6 +869,13 @@ async function renderRoom(container, roomId, user, inviteCode = "") {
       await setOnlineRoomStatus(room.id, "closed");
       await renderRoom(container, room.id, user);
     }, "Комната завершена.");
+  });
+
+  container.querySelector("#room-reopen")?.addEventListener("click", async (event) => {
+    await runRoomAction(event.currentTarget, async () => {
+      await setOnlineRoomStatus(room.id, "open");
+      await renderRoom(container, room.id, user);
+    }, "Комната снова открыта.");
   });
 
   container.querySelector("#room-delete")?.addEventListener("click", async (event) => {
