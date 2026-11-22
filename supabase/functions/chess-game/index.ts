@@ -182,6 +182,15 @@ Deno.serve(async (req) => {
     if (action === "start") {
       if (room.host_id !== user.id) throw new HttpError(403, "Начать партию может только ведущий.");
       if (room.status === "closed") throw new HttpError(409, "Сначала верни комнату в лобби.");
+      const { data: existingGame, error: existingGameError } = await admin
+        .from("club_room_game_states")
+        .select("state")
+        .eq("room_id", roomId)
+        .maybeSingle();
+      if (existingGameError) throw new HttpError(500, existingGameError.message);
+      if (existingGame?.state?.status === "active") {
+        throw new HttpError(409, "Партия уже идёт. Сначала заверши её и верни комнату в лобби.");
+      }
       const opponentMode = body.opponent_mode === "bot" ? "bot" : "human";
       const difficulty = ["easy", "medium", "hard"].includes(body.bot_difficulty) ? body.bot_difficulty : "medium";
       const { data: members, error: membersError } = await admin
