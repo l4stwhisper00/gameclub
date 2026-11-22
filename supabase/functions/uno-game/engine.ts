@@ -209,6 +209,7 @@ export function applyUnoAction(
   if (hand.length === 1) state.unoPenaltyPlayerId = playerId;
   else state.unoPenaltyPlayerId = null;
   let actionDetail: string | undefined;
+  state.lastAction = { type: "play", playerId, card };
 
   if (hand.length === 0) {
     state.status = "finished";
