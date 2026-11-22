@@ -26,3 +26,64 @@
 .game-table__head h2,.game-table__title { font-family:'DM Serif Display',Georgia,serif;font-weight:400;letter-spacing:0; }
 .game-table__surface { border-color:rgba(236,231,216,.12);border-radius:8px;background:#171a15; }
 .game-table__aside>* { border-color:rgba(236,231,216,.1);border-radius:7px;background:#171a15; }
+
+
+/* Large-format game rooms: expansive tabletop workspace rather than a chess-sized card. */
+.game-table--large {
+  width:100%;min-height:72vh;padding:clamp(20px,3vw,34px);
+  border-radius:24px;
+  background:
+    radial-gradient(ellipse at 50% 0%,color-mix(in srgb,var(--gt-tone) 23%,transparent),transparent 56%),
+    linear-gradient(145deg,#171b20,#0c1018 72%);
+  box-shadow:0 28px 90px rgba(0,0,0,.36),inset 0 1px rgba(255,255,255,.05);
+}
+.game-table--large .game-table__head {align-items:center;margin-bottom:clamp(22px,3vw,38px)}
+.game-table--large .game-table__head h2 {font-size:clamp(24px,3vw,38px)}
+.game-table--large .game-table__head p {font-size:12px}
+.game-table--large .game-table__layout {grid-template-columns:minmax(0,1fr) minmax(260px,320px);gap:20px}
+.game-table--large .game-table__surface {min-height:clamp(430px,64vh,760px);padding:clamp(20px,4vw,48px);border-radius:20px;background:radial-gradient(ellipse at 50% 38%,color-mix(in srgb,var(--gt-tone) 22%,transparent),transparent 64%),linear-gradient(145deg,#1a211f,#10151a)}
+.game-table--large .game-table__panel,.game-table--large .game-table__players {padding:18px;border-radius:16px;background:rgba(7,11,16,.55);border-color:rgba(255,255,255,.1)}
+.game-table--large .game-table__player-list {grid-template-columns:1fr}
+.game-table--large .game-table__foot {margin-top:20px}
+.game-table--large .gt-scene--quest {max-width:760px;grid-template-columns:minmax(120px,220px) 1fr;gap:clamp(20px,4vw,56px)}
+.game-table--large .gt-d20 {width:min(100%,190px);font-size:clamp(28px,4vw,48px)}
+.game-table--large .gt-quest-copy strong {font-size:clamp(20px,2.4vw,32px)}
+.game-table--large .gt-quest-copy small {font-size:12px}
+.game-table--large .gt-rune-row {padding:22px;font-size:22px}
+.game-table--large .gt-property-board {width:min(520px,100%);gap:8px;padding:16px;border-width:8px}
+.game-table--large .gt-property-board span {font-size:clamp(10px,1.2vw,15px)}
+.game-table--large .gt-property-board b {font-size:clamp(54px,7vw,92px)}
+.game-table--large .gt-hex-board {max-width:760px;gap:5px}
+.game-table--large .gt-hex-board span {width:clamp(68px,7vw,108px);height:clamp(60px,6vw,94px);font-size:clamp(26px,3vw,42px)}
+.game-table--large .gt-route-map {max-width:900px}
+.game-table--large .gt-route-map span {font-size:12px}
+.game-table--large .gt-duel-cards {gap:28px}
+.game-table--large .gt-monster-card,.game-table--large .gt-loot-card {max-width:260px;min-height:320px;align-content:center}
+.game-table--large .gt-duel-cards b {font-size:76px}
+.game-table--large .gt-duel-cards strong {font-size:15px}
+.game-table--large .gt-backgammon {max-width:680px;padding:26px}
+.game-table--large .gt-points i {height:clamp(130px,22vh,220px)}
+.game-table--large .gt-checkers {font-size:26px}
+.room-detail-page--large-game {max-width:1440px}
+.room-detail-page--large-game .room-detail-hero {padding:20px 28px 17px}
+.room-detail-page--large-game .room-detail-hero__main {margin:14px 0}
+.room-detail-page--large-game .room-detail-hero__icon {font-size:54px}
+.room-detail-page--large-game .room-detail-grid {grid-template-columns:minmax(0,1fr);gap:18px}
+.room-detail-page--large-game .room-detail-main {display:contents}
+.room-detail-page--large-game #room-game-mount {grid-row:1}
+.room-detail-page--large-game .room-detail-aside {grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:900px) {
+ .game-table--large .game-table__layout {grid-template-columns:1fr}
+ .game-table--large .game-table__aside {grid-template-columns:repeat(2,minmax(0,1fr))}
+ .game-table--large .game-table__surface {min-height:480px}
+}
+@media(max-width:560px) {
+ .game-table--large {padding:14px;min-height:0;border-radius:17px}
+ .game-table--large .game-table__aside {grid-template-columns:1fr}
+ .game-table--large .game-table__surface {min-height:420px;padding:14px}
+ .game-table--large .gt-scene--quest {grid-template-columns:1fr;justify-items:center;text-align:center}
+ .game-table--large .gt-rune-row {grid-column:auto;width:100%}
+ .room-detail-page--large-game .room-detail-aside {grid-template-columns:1fr}
+ .room-detail-page--large-game .room-detail-hero {padding:17px}
+ .room-detail-page--large-game .room-detail-hero__icon {display:none}
+}
