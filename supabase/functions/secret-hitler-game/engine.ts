@@ -19,9 +19,9 @@ export type SHAction=
  |{type:"end_game"};
 function shuffle<T>(items:T[],random:()=>number):T[]{const a=[...items];for(let i=a.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function activePlayers(state:SHState){return state.players.filter((id)=>!state.eliminatedPlayers.includes(id));}
-function president(state:SHState){let index=state.presidentIndex;for(let i=0;i<state.players.length;i++){const id=state.players[index];if(state.roles[id]!=="dead")return id;index=(index+1)%state.players.length;}return state.players[state.presidentIndex];}
+function president(state:SHState){let index=state.presidentIndex;for(let i=0;i<state.players.length;i++){const id=state.players[index];if(!state.eliminatedPlayers.includes(id))return id;index=(index+1)%state.players.length;}return state.players[state.presidentIndex];}
 function roleIsFascist(role:SHRole){return role==="fascist"||role==="hitler";}
-function nextPresident(state:SHState){let index=state.presidentIndex;for(let i=0;i<state.players.length;i++){index=(index+1)%state.players.length;if(state.roles[state.players[index]]!=="dead")break;}state.presidentIndex=index;state.chancellorId=null;state.votes={};state.presidentHand=[];state.chancellorHand=[];state.pendingPower=null;state.phase="nominate";}
+function nextPresident(state:SHState){let index=state.presidentIndex;for(let i=0;i<state.players.length;i++){index=(index+1)%state.players.length;if(!state.eliminatedPlayers.includes(state.players[index]))break;}state.presidentIndex=index;state.chancellorId=null;state.votes={};state.presidentHand=[];state.chancellorHand=[];state.pendingPower=null;state.phase="nominate";}
 function powerFor(n:number,count:number):"investigate"|"execute"|null{
  if(n<=6)return count===3||count===4?"investigate":count===5?"execute":null;
  if(n<=8)return count===2||count===3?"investigate":count>=4&&count<=5?"execute":null;
@@ -107,7 +107,7 @@ export function getSecretHitlerPublicState(state:SHState){
 }
 export function getSecretHitlerPrivateState(state:SHState,playerId:string){
  if(!state.players.includes(playerId))throw new Error("Ты не участник партии.");
- const role=state.roles[playerId],allies=role==="fascist"?state.players.filter((id)=>id!==playerId&&state.roles[id]!=="liberal"&&state.roles[id]!=="dead"):[];
+ const role=state.roles[playerId],allies=role==="fascist"?state.players.filter((id)=>id!==playerId&&state.roles[id]!=="liberal"&&!state.eliminatedPlayers.includes(id)):[];
  const knowsHitler=role==="hitler"&&state.players.length<=6?state.players.filter((id)=>state.roles[id]==="fascist"):[];
  return {role,team:role==="liberal"?"liberal":"fascist",allies,knowsHitler,
  presidentPolicies:state.phase==="president_discard"&&president(state)===playerId?state.presidentHand:[],
