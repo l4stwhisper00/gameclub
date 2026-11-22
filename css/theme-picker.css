@@ -139,3 +139,50 @@ body { background:var(--theme-glow),var(--theme-bg);color:var(--theme-text);tran
   .sakura-petals { display:none; }
   .theme-drawer { transition:none; }
 }
+
+/* Theme-aware surfaces loaded after lazy catalog/room stylesheets. */
+html[data-theme] .catalog-search,html[data-theme] .rooms-search,html[data-theme] .rooms-select,
+html[data-theme] .room-panel,html[data-theme] .room-host-panel,html[data-theme] .room-invite-panel,
+html[data-theme] .game-modal__panel,html[data-theme] .game-rules-dialog,html[data-theme] .room-confirm-dialog,
+html[data-theme] .chess-game,html[data-theme] .game-table,html[data-theme] .room-card,
+html[data-theme] .game-card,html[data-theme] .profile-card,html[data-theme] .auth-card {
+  color:var(--theme-text);border-color:var(--theme-line);background:var(--theme-panel);
+}
+html[data-theme] .game-card__title,html[data-theme] .game-modal__content h2,
+html[data-theme] .rooms-toolbar h2,html[data-theme] .catalog-toolbar__heading h2,
+html[data-theme] .room-card__content h3,html[data-theme] .room-panel h2,
+html[data-theme] .room-panel h3,html[data-theme] .game-rules-dialog h2 {
+  color:var(--theme-text);
+}
+html[data-theme] .game-card__tagline,html[data-theme] .game-modal__description,
+html[data-theme] .room-card__description,html[data-theme] .room-card__meta,
+html[data-theme] .room-card__host,html[data-theme] .game-rules-sections p,
+html[data-theme] .game-rules-sections li { color:var(--theme-muted); }
+html[data-theme] .catalog-search input,html[data-theme] .rooms-search input,
+html[data-theme] .rooms-select { color:var(--theme-text); }
+html[data-theme] .catalog-search,html[data-theme] .rooms-search,html[data-theme] .rooms-select,
+html[data-theme] .catalog-filter,html[data-theme] .catalog-count,
+html[data-theme] .game-card__tags span,html[data-theme] .game-modal__tags span {
+  border-color:var(--theme-line);background:color-mix(in srgb,var(--theme-bg) 75%,transparent);color:var(--theme-muted);
+}
+html[data-theme] .catalog-filter.is-active { border-color:var(--theme-accent);color:var(--theme-text);background:color-mix(in srgb,var(--theme-accent) 16%,transparent); }
+html[data-theme] .catalog-count,html[data-theme] .catalog-search>span { color:var(--theme-accent); }
+html[data-theme] .catalog-button--quiet,html[data-theme] .room-button--soft { color:var(--theme-text);border-color:var(--theme-line);background:transparent; }
+html[data-theme] .catalog-button--primary,html[data-theme] .room-button--primary { color:#101510;background:var(--theme-accent);box-shadow:none; }
+html[data-theme] .room-card__banner { background:radial-gradient(ellipse at 50% 100%,color-mix(in srgb,var(--theme-accent) 30%,transparent),transparent 62%),var(--theme-card); }
+html[data-theme] .chess-game__turn { color:var(--theme-text);border-color:var(--theme-line);background:color-mix(in srgb,var(--theme-accent) 12%,var(--theme-card)); }
+html[data-theme] .chess-game__moves,html[data-theme] .game-table__aside>* { color:var(--theme-text);border-color:var(--theme-line);background:var(--theme-card); }
+html[data-theme] .chess-game__moves h3,html[data-theme] .chess-game__moves li b { color:var(--theme-text); }
+html[data-theme] .chess-result__card { color:var(--theme-text);border-color:var(--theme-line);background:var(--theme-panel); }
+html[data-theme] .chess-result__card h2 { color:var(--theme-text); }
+html[data-theme] .chess-result__card p { color:var(--theme-muted); }
+html[data-theme="cozy"] .game-card__art,html[data-theme="sakura"] .game-card__art { filter:saturate(.82); }
+html[data-theme="cozy"] .game-card__body,html[data-theme="sakura"] .game-card__body { background:var(--theme-panel); }
+html[data-theme="cozy"] .game-modal__panel,html[data-theme="sakura"] .game-modal__panel,
+html[data-theme="cozy"] .game-rules-dialog,html[data-theme="sakura"] .game-rules-dialog { color:var(--theme-text); }
+html[data-theme="cozy"] .display-title,html[data-theme="sakura"] .display-title { text-shadow:0 1px 0 rgba(255,255,255,.2); }
+html[data-theme="cyberpunk"] .topbar { box-shadow:0 1px 0 rgba(236,60,220,.12),0 8px 32px rgba(0,0,0,.2); }
+html[data-theme="dynamic"] .topbar { box-shadow:0 1px 0 rgba(0,210,244,.16); }
+html[data-theme="fantasy"] .home-hero::after { background:radial-gradient(ellipse at 85% 45%,rgba(187,117,62,.2),transparent 60%); }
+html[data-theme="classic"] .home-hero::after { background:radial-gradient(ellipse at 85% 50%,rgba(173,104,48,.23),transparent 55%); }
+html[data-theme="minimal"] .home-hero::after { background:linear-gradient(135deg,transparent,rgba(170,196,160,.06)); }
