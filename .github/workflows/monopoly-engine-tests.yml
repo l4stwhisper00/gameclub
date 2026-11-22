@@ -1,0 +1,26 @@
+name: Monopoly engine tests
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/monopoly-game/**"
+      - ".github/workflows/monopoly-engine-tests.yml"
+  push:
+    branches:
+      - supabase-integration
+    paths:
+      - "supabase/functions/monopoly-game/**"
+      - ".github/workflows/monopoly-engine-tests.yml"
+
+jobs:
+  monopoly-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check Edge Function
+        run: deno check supabase/functions/monopoly-game/index.ts
+      - name: Run Monopoly rules tests
+        run: deno test supabase/functions/monopoly-game/engine.test.ts
