@@ -254,7 +254,7 @@ export function applyMonopolyAction(source: MonopolyState, playerId: string, act
   if(action.type==="decline") {
     if(state.phase!=="purchase") throw new Error("Сейчас нечего отклонять.");
     state.lastEvent="Игрок отказался от покупки.";
-    const isDouble=Boolean(state.lastDice&&state.lastDice[0]===state.lastDice[1]);
+    const isDouble=state.doublesCount>0;
     state.pendingSpace=null;endLanding(state,player,isDouble);
     return state;
   }
