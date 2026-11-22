@@ -78,3 +78,11 @@ Deno.test("rest is not available during combat", () => {
   state.combatActive = true;
   assertThrows(() => applyDndAction(state, "p2", { type: "rest", kind: "long" }));
 });
+
+Deno.test("only the DM can finish a campaign", () => {
+  let state = startDndCampaign(players, "host");
+  assertThrows(() => applyDndAction(state, "p2", { type: "end_campaign" }));
+  state = applyDndAction(state, "host", { type: "end_campaign" });
+  assertEquals(state.status, "finished");
+  assertThrows(() => applyDndAction(state, "p2", { type: "roll", notation: "d20" }));
+});
