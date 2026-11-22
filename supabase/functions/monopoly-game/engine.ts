@@ -156,6 +156,7 @@ function rentFor(state: MonopolyState, space: MonopolySpace, diceTotal: number):
 }
 function endLanding(state: MonopolyState, player: MonopolyPlayer, isDouble: boolean): void {
   if (state.status === "finished") return;
+  if (player.bankrupt) { finishTurn(state); return; }
   if (isDouble && !player.jailed) {
     state.phase = "roll";
     state.lastEvent += " Дубль — дополнительный бросок.";
@@ -183,7 +184,7 @@ function resolveLanding(state: MonopolyState, player: MonopolyPlayer, diceTotal:
   if (space.type === "tax") {
     const paid = pay(state, player, space.tax || 0, null);
     state.lastEvent = paid ? "Уплачен налог: " + space.tax + "." : "Банкротство из-за налога.";
-    endLanding(state, player, false); return;
+    endLanding(state, player, isDouble); return;
   }
   if (space.type === "chance" || space.type === "community") {
     const deck = space.type === "chance" ? CHANCE : COMMUNITY;
@@ -203,7 +204,7 @@ function resolveLanding(state: MonopolyState, player: MonopolyPlayer, diceTotal:
       player.position = card.value || 0;
       resolveLanding(state, player, diceTotal, false, random); return;
     }
-    endLanding(state, player, false); return;
+    endLanding(state, player, isDouble); return;
   }
   state.lastEvent = space.type === "go" ? "Ты на старте." : space.type === "free" ? "Свободная стоянка. Отдыхай." : "Посещение тюрьмы.";
   endLanding(state, player, isDouble);
@@ -246,7 +247,7 @@ export function applyMonopolyAction(source: MonopolyState, playerId: string, act
     player.cash-=space.price||0;
     state.properties[space.index].ownerId=player.id;
     state.lastEvent="Куплено: "+space.name+".";
-    const isDouble=Boolean(state.lastDice&&state.lastDice[0]===state.lastDice[1]);
+    const isDouble=state.doublesCount>0;
     state.pendingSpace=null;endLanding(state,player,isDouble);
     return state;
   }
