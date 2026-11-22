@@ -10,10 +10,10 @@ Deno.test("only the actor receives the word",()=>{
 Deno.test("correct guesses award points to the actor team",()=>{
  let state=startCrocodile(["a","b","c","d"],"a",()=>0.2);
  const word=getCrocodilePrivateState(state,state.currentActorId).word!;
- const guesser=state.players.find((id)=>id!==state.currentActorId)!;
+ const guesser=state.players.find((id)=>id!==state.currentActorId&&state.teams[id]===state.teams[state.currentActorId])!;
  state=applyCrocodileAction(state,guesser,{type:"guess",guess:word});
  assertEquals(state.scores.red,1);
- assertEquals(state.currentActorId,"c");
+ assertEquals(state.currentActorId,"b");
 });
 Deno.test("wrong guesses do not score and actor can skip",()=>{
  let state=startCrocodile(["a","b","c","d"],"a",()=>0.2);
