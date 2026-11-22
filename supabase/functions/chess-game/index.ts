@@ -95,15 +95,22 @@ function chooseBotMove(chess, difficulty) {
     return { from: move.from, to: move.to, promotion: move.promotion || "q" };
   }
 
-  const depth = difficulty === "hard" ? 3 : 2;
+  // Root alpha-beta pruning keeps the bot responsive on slower devices.
+  const depth = difficulty === "hard" ? 2 : 1;
+  const ordered = [...moves].sort((a, b) =>
+    Number(Boolean(b.captured)) - Number(Boolean(a.captured))
+    || Number(Boolean(b.promotion)) - Number(Boolean(a.promotion))
+  );
   let bestScore = Infinity;
+  let rootBeta = Infinity;
   let bestMoves = [];
-  for (const move of moves) {
+  for (const move of ordered) {
     const next = new Chess(chess.fen());
     next.move({ from: move.from, to: move.to, promotion: move.promotion || "q" });
-    const score = search(next, depth - 1, -Infinity, Infinity);
+    const score = search(next, depth, -Infinity, rootBeta);
     if (score < bestScore) {
       bestScore = score;
+      rootBeta = score;
       bestMoves = [move];
     } else if (score === bestScore) {
       bestMoves.push(move);
@@ -284,15 +291,22 @@ Deno.serve(async (req) => {
       if (!move) throw new HttpError(400, "Такой ход невозможен.");
 
       let nextState = stateFromChess(state, chess, { san: move.san, from: move.from, to: move.to });
-      let saved = await saveState(admin, roomId, nextState, expectedRevision, user.id);
 
+      // Resolve the bot reply before writing. One request now produces one atomic
+      // revision, so clients never render the half-turn between human and bot.
       if (state.opponentMode === "bot" && nextState.status === "active" && chess.turn() === "b") {
         const botMove = chooseBotMove(chess, state.botDifficulty);
         if (botMove) {
           const reply = chess.move(botMove);
           nextState = stateFromChess(nextState, chess, { san: reply.san, from: reply.from, to: reply.to });
-          saved = await saveState(admin, roomId, nextState, Number(saved.revision), user.id);
         }
+      }
+
+      const saved = await saveState(admin, roomId, nextState, expectedRevision, user.id);
+      if (nextState.status === "finished") {
+        const { error: roomStatusError } = await admin.from("club_rooms")
+          .update({ status: "open" }).eq("id", roomId);
+        if (roomStatusError) throw new HttpError(500, roomStatusError.message);
       }
       return json({ state: saved.state, revision: saved.revision });
     }
@@ -318,6 +332,10 @@ Deno.serve(async (req) => {
         updatedAt: new Date().toISOString()
       };
       const saved = await saveState(admin, roomId, nextState, Number(gameRow.revision), user.id);
+      // A resignation ends the match and returns everyone to the room lobby.
+      const { error: roomStatusError } = await admin.from("club_rooms")
+        .update({ status: "open" }).eq("id", roomId);
+      if (roomStatusError) throw new HttpError(500, roomStatusError.message);
       return json({ state: saved.state, revision: saved.revision });
     }
 
