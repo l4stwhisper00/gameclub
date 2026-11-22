@@ -14,7 +14,7 @@ Deno.test("assigns mafia, doctor and detective without duplicate roles", () => {
 });
 
 Deno.test("roles and mafia teammates are private", () => {
-  const state = startMafia(["a","b","c","d","e","f"], () => 0.4);
+  const state = startMafia(["a","b","c","d","e","f","g","h"], () => 0.4);
   const mafia = playersWithRole(state, "mafia");
   assertEquals(getMafiaPrivateState(state, mafia[0]).role, "mafia");
   assertEquals(getMafiaPrivateState(state, mafia[0]).mafiaTeammates.includes(mafia[1]), true);
@@ -60,6 +60,7 @@ Deno.test("day vote eliminates a player and reveals their role", () => {
   for (const id of next.alive) {
     if (id !== target) next = applyMafiaAction(next, id, { type: "vote", targetId: target });
   }
+  next = applyMafiaAction(next, target, { type: "vote", targetId: mafia });
   assertEquals(next.revealedRoles[target], "civilian");
   assertEquals(next.alive.includes(target), false);
 });
