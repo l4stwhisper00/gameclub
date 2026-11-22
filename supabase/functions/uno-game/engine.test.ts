@@ -143,3 +143,18 @@ Deno.test("the next player can catch an uncalled UNO and draw a penalty", () => 
   assertEquals(caught.hands.a.length, 3);
   assertEquals(caught.unoPenaltyPlayerId, null);
 });
+
+Deno.test("public state never reveals the identity of a privately drawn playable card", () => {
+  const state = stateWith(
+    [{ id: "a1", color: "blue", kind: "number", value: 1 }],
+    [{ id: "b1", color: "red", kind: "number", value: 5 }]
+  );
+  state.drawPile = [{ id: "secret-red-8", color: "red", kind: "number", value: 8 }];
+  const drawn = applyUnoAction(state, "a", { type: "draw" });
+  const publicState = getUnoPublicState(drawn);
+  assertEquals(publicState.hasPendingDrawnCard, true);
+  assertEquals("pendingDrawnCardId" in publicState, false);
+  assertEquals(publicState.lastAction?.type, "draw");
+  assertEquals("card" in (publicState.lastAction || {}), false);
+  assertEquals(getUnoPlayerHand(drawn, "a").some((card) => card.id === "secret-red-8"), true);
+});
