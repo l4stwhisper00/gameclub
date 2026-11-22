@@ -74,7 +74,7 @@ function authShell({ eyebrow, title, subtitle, submitLabel, fields, switchText, 
       </div>
       <section class="auth-card">
         <h2>${mode === "register" ? "Создать аккаунт" : "С возвращением"}</h2>
-        <p class="auth-subtitle">${mode === "register" ? "Займи своё место за игровым столом." : "Твоя следующая игровая история уже ждёт."}</p>
+        <p class="auth-subtitle">${mode === "register" ? "Займи своё место за игровым столом." : "Твои комнаты и любимые игры уже здесь."}</p>
         <form id="auth-form" novalidate>
           ${fields}
           <p id="form-error" class="form-error" role="alert"></p>
@@ -114,8 +114,8 @@ function renderRegister() {
   app.innerHTML = authShell({
     mode: "register",
     eyebrow: "ТВОЯ ИСТОРИЯ НАЧИНАЕТСЯ ЗДЕСЬ",
-    title: 'Найди свою<br><span class="gradient-text">игровую стаю.</span>',
-    subtitle: "Создай аккаунт, выбери любимые игры и найди людей, с которыми даже обычный вечер станет приключением.",
+    title: 'Собери свою<br><span class="gradient-text">компанию.</span>',
+    subtitle: "Создай профиль, выбери любимые игры и приглашай друзей за общий стол.",
     submitLabel: "Вступить в клуб",
     switchText: "Уже есть аккаунт?",
     switchHref: "#/login",
