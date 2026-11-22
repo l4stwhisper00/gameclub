@@ -112,5 +112,5 @@ export function getSecretHitlerPrivateState(state:SHState,playerId:string){
  return {role,team:role==="liberal"?"liberal":"fascist",allies,knowsHitler,
  presidentPolicies:state.phase==="president_discard"&&president(state)===playerId?state.presidentHand:[],
  chancellorPolicies:state.phase==="chancellor_enact"&&state.chancellorId===playerId?state.chancellorHand:[],
- investigation:state.investigationResults[playerId]||null,isAlive:role!=="dead"};
+ investigation:state.investigationResults[playerId]||null,isAlive:role!=="dead",hasVoted:playerId in state.votes};
 }
