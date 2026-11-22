@@ -192,3 +192,64 @@ body.has-game-modal { overflow:hidden; }
   user-select: none;
   -webkit-touch-callout: none;
 }
+
+
+/* Premium catalog treatment */
+.catalog-hero { grid-template-columns:1fr 250px;min-height:300px;padding:4px 0 38px; }
+.catalog-hero .display-title { font-size:clamp(42px,5.8vw,66px); }
+.catalog-hero__relic { width:220px;height:220px;border:1px solid rgba(197,164,109,.22);background:radial-gradient(circle,#292d23,#171a15 68%); }
+.catalog-hero__relic>span { font-size:78px;filter:grayscale(.75) sepia(.35);animation:none; }
+.catalog-hero__relic>i { color:#c5a46d;text-shadow:none; }
+.catalog-relic__ring { border-color:rgba(197,164,109,.2); }
+.catalog-toolbar { border-color:rgba(236,231,216,.12); }
+.catalog-toolbar__heading h2 { font:400 29px var(--font-display);letter-spacing:0; }
+.catalog-count { border-color:rgba(197,164,109,.32);border-radius:5px;color:#d4bd91;background:rgba(197,164,109,.07);letter-spacing:.5px; }
+.catalog-search { border-color:rgba(236,231,216,.13);border-radius:8px;background:#191c17; }
+.catalog-search:focus-within { border-color:rgba(197,164,109,.6);box-shadow:0 0 0 3px rgba(197,164,109,.07); }
+.catalog-search>span { color:#c5a46d; }
+.catalog-filter { min-height:34px;border-radius:6px;border-color:rgba(236,231,216,.12);color:#aaa99e;background:transparent; }
+.catalog-filter:hover { border-color:rgba(197,164,109,.5);color:#f0eee6; }
+.catalog-filter.is-active { border-color:rgba(197,164,109,.55);color:#e8d5b0;background:rgba(197,164,109,.1);box-shadow:none; }
+.game-grid { gap:14px;perspective:none; }
+.game-card,.game-card.is-visible {
+  border:1px solid rgba(236,231,216,.11);border-radius:10px;background:#1b1e19;
+  box-shadow:none;opacity:1;transform:none;transition:border-color .2s,background .2s;
+}
+.game-card:hover { transform:translateY(-2px);border-color:rgba(197,164,109,.38);background:#20231d;box-shadow:0 14px 34px rgba(0,0,0,.18); }
+.game-card::after { display:none; }
+.game-card__art {
+  height:145px;background:linear-gradient(135deg,color-mix(in srgb,var(--game-tone) 17%,#25281f),#191c17 78%);
+}
+.game-card__art::before { opacity:.14;background-size:40px 40px,56px 56px; }
+.game-card__art::after { display:none; }
+.game-card__category { border-radius:4px;border-color:rgba(236,231,216,.18);background:rgba(17,19,16,.72);font-weight:600;letter-spacing:.2px; }
+.game-card__number { color:rgba(240,238,230,.5); }
+.game-card__emoji { width:88px;height:88px;border:1px solid rgba(236,231,216,.12);border-radius:50%;background:rgba(17,19,16,.28);filter:saturate(.55); }
+.game-card__orbit { opacity:.22; }
+.game-card__body { padding:17px; }
+.game-card__title { font:400 20px var(--font-display);letter-spacing:0; }
+.game-card__spark { color:#c5a46d; }
+.game-card__tagline { color:#aaa99e;line-height:1.65; }
+.game-card__stats { border-color:rgba(236,231,216,.1); }
+.game-card__stats span { color:#c2bfb2; }
+.game-card__tags span { border-radius:4px;border-color:rgba(236,231,216,.1);background:transparent;color:#aaa99e; }
+.catalog-button { min-height:38px;border-radius:6px;font-weight:700; }
+.catalog-button--primary { color:#171811;background:#c5a46d;box-shadow:none; }
+.catalog-button--primary:hover { background:#d4b982;box-shadow:none; }
+.catalog-button--quiet { border-color:rgba(236,231,216,.14);color:#d4d0c3;background:transparent; }
+.catalog-button--quiet:hover { border-color:rgba(197,164,109,.45);background:rgba(197,164,109,.06); }
+.game-modal__panel { border-color:rgba(197,164,109,.25);border-radius:12px;background:#1b1e19;box-shadow:0 25px 80px rgba(0,0,0,.55); }
+.game-modal__close { border-radius:6px;background:#292d25; }
+.game-modal__content h2 { font:400 34px var(--font-display); }
+@media(max-width:760px) {
+ .catalog-hero { grid-template-columns:1fr;min-height:0; }
+ .catalog-hero__relic { display:none; }
+ .game-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:480px) {
+ .game-grid { grid-template-columns:1fr; }
+ .game-card { display:grid;grid-template-columns:112px minmax(0,1fr); }
+ .game-card__art { min-height:215px;height:100%; }
+ .game-card__emoji { width:66px;height:66px;font-size:38px; }
+ .game-card__title { font-size:17px; }
+}
