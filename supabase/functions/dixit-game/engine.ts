@@ -87,7 +87,7 @@ export function getDixitPublicState(state:DixitState){
  const show=state.phase==="vote"||state.phase==="results"||state.phase==="finished";
  return {gameId:state.gameId,status:state.status,hostId:state.hostId,players:state.players,scores:state.scores,round:state.round,
  storytellerId:storyteller(state),phase:state.phase,clue:state.clue,submissionCount:state.submissions.length,
- submissions:show?state.submissions.map((item)=>({id:item.id,...state.cards[item.cardId],...(state.phase==="results"||state.phase==="finished"?{ownerId:item.ownerId}: {})})):[],
+ submissions:show?state.submissions.map((item)=>({...state.cards[item.cardId],id:item.id,...(state.phase==="results"||state.phase==="finished"?{ownerId:item.ownerId}: {})})):[],
  votesCount:Object.keys(state.votes).length,correctSubmissionId:state.phase==="results"||state.phase==="finished"?state.correctSubmissionId:null,
  winnerIds:state.winnerIds,lastEvent:state.lastEvent};
 }
