@@ -43,7 +43,7 @@ export function startAlias(playerIds:string[],random:()=>number=Math.random):Ali
     winnerTeam:null,lastEvent:"Красная команда начинает объяснять слова."
   };
 }
-export function applyAliasAction(source:AliasState,playerId:string,action:AliasAction):AliasState{
+export function applyAliasAction(source:AliasState,playerId:string,action:AliasAction,random:()=>number=Math.random):AliasState{
   const state=structuredClone(source);
   if(state.status!=="active")throw new Error("Партия завершена.");
   if(!state.players.includes(playerId))throw new Error("Ты не участник игры.");
@@ -57,7 +57,7 @@ export function applyAliasAction(source:AliasState,playerId:string,action:AliasA
       return state;
     }
     state.lastEvent=action.type==="correct"?"Слово угадано! +1 очко.":"Слово пропущено.";
-    if(state.wordIndex>=state.words.length)state.words=shuffle(state.words,()=>0.37),state.wordIndex=0;
+    if(state.wordIndex>=state.words.length)state.words=shuffle(state.words,random),state.wordIndex=0;
     return state;
   }
   if(action.type==="end_turn"){
