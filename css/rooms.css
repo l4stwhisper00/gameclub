@@ -310,3 +310,13 @@
 .chess-promotion-dialog__choices button { aspect-ratio:1; border:1px solid rgba(255,255,255,.1); border-radius:10px; color:#f4ead5; background:rgba(255,255,255,.06); cursor:pointer; font:34px "Segoe UI Symbol",serif; }
 .chess-promotion-dialog__choices button:hover { border-color:#a78bfa; background:rgba(139,92,246,.18); }
 .chess-promotion-dialog__cancel { margin-top:12px; padding:7px 10px; border:0; color:#a9a4ba; background:transparent; cursor:pointer; font-size:9px; }
+
+
+/* Keep chess opponent and bot difficulty grouped in the same settings column. */
+.room-chess-opponent { align-content:start; }
+.room-chess-opponent__difficulty { display:grid; gap:8px; margin-top:5px; }
+.room-chess-opponent__difficulty > label { color:#c7c3d8; font-size:9px; font-weight:800; letter-spacing:1px; }
+.room-chess-opponent__difficulty .room-field-hint { margin-top:0; }
+@media (max-width:560px) {
+  .room-chess-opponent__difficulty { margin-top:2px; }
+}
