@@ -1,0 +1,26 @@
+name: Avalon engine tests
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/avalon-game/**"
+      - ".github/workflows/avalon-engine-tests.yml"
+  push:
+    branches:
+      - supabase-integration
+    paths:
+      - "supabase/functions/avalon-game/**"
+      - ".github/workflows/avalon-engine-tests.yml"
+
+jobs:
+  avalon-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check Edge Function
+        run: deno check supabase/functions/avalon-game/index.ts
+      - name: Run Avalon rules tests
+        run: deno test supabase/functions/avalon-game/engine.test.ts
