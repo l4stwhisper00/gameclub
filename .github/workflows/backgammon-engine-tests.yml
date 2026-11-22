@@ -1,0 +1,26 @@
+name: Backgammon engine tests
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/backgammon-game/**"
+      - ".github/workflows/backgammon-engine-tests.yml"
+  push:
+    branches:
+      - supabase-integration
+    paths:
+      - "supabase/functions/backgammon-game/**"
+      - ".github/workflows/backgammon-engine-tests.yml"
+
+jobs:
+  backgammon-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check Edge Function
+        run: deno check supabase/functions/backgammon-game/index.ts
+      - name: Run Backgammon rules tests
+        run: deno test supabase/functions/backgammon-game/engine.test.ts
