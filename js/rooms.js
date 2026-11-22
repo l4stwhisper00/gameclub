@@ -3,6 +3,8 @@ import { storage, createId } from "./storage.js";
 import { GAMES, getGameById } from "./games.js";
 import { renderRoomChat, addRoomSystemMessage } from "./chat.js";
 import { renderGameRules } from "./game-rules.js";
+import { ensurePublicProfile, listOnlineRooms, getOnlineRoom, createOnlineRoom, joinOnlineRoom, leaveOnlineRoom, setOnlineRoomStatus, removeOnlineRoomMember, deleteOnlineRoom } from "./online-rooms.js";
+let onlineRoomsCache = [];
 
 const CSS_ID = "nastolny-rooms-styles";
 
@@ -95,7 +97,7 @@ function getRoomUrl(room) {
 function roomCard(room, user) {
   const game = getGameById(room.gameId);
   if (!game) return "";
-  const host = storage.getUserById(room.hostId);
+  const host = room.host || storage.getUserById(room.hostId);
   const member = getMember(room, user.id);
   const status = getStatus(room);
   const count = (room.members || []).length;
@@ -126,8 +128,10 @@ function roomCard(room, user) {
     </article>`;
 }
 
-function renderList(container, user) {
-  const visibleRooms = storage.getRooms()
+async function renderList(container, user) {
+  await ensurePublicProfile(user);
+  onlineRoomsCache = await listOnlineRooms();
+  const visibleRooms = onlineRoomsCache
     .filter((room) => room.visibility === "public" || getMember(room, user.id))
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
@@ -168,7 +172,7 @@ function renderList(container, user) {
         <p>Создай первую комнату и пригласи игроков в свою партию.</p>
         <a class="room-button room-button--primary" href="#/rooms/new">Создать первую комнату ↗</a>
       </div>
-      <p class="rooms-footnote">КОМНАТЫ СОХРАНЯЮТСЯ В ЭТОМ БРАУЗЕРЕ · УЧАСТНИКИ ИГРЫ ИСПОЛЬЗУЮТ ОБЩИЙ БРАУЗЕРНЫЙ ПРОФИЛЬ</p>
+      <p class="rooms-footnote">КОМНАТЫ И УЧАСТНИКИ СИНХРОНИЗИРУЮТСЯ ЧЕРЕЗ SUPABASE · ВОЙДИ В АККАУНТ, ЧТОБЫ ИГРАТЬ С ДРУГИМИ</p>
     </section>`;
 
   const search = container.querySelector("#rooms-search");
@@ -179,7 +183,7 @@ function renderList(container, user) {
   function refresh() {
     const query = search.value.trim().toLocaleLowerCase("ru");
     const mode = filter.value;
-    const matches = storage.getRooms()
+    const matches = onlineRoomsCache
       .filter((room) => room.visibility === "public" || getMember(room, user.id))
       .filter((room) => {
         if (mode === "mine" && !getMember(room, user.id)) return false;
@@ -204,11 +208,11 @@ function renderList(container, user) {
 
   search.addEventListener("input", refresh);
   filter.addEventListener("change", refresh);
-  grid.addEventListener("click", (event) => {
+  grid.addEventListener("click", async (event) => {
     const button = event.target.closest("[data-room-join]");
     if (!button) return;
     try {
-      joinRoom(button.dataset.roomJoin, user);
+      await joinOnlineRoom(button.dataset.roomJoin);
       notify("Ты присоединился к комнате.");
       go(`#/rooms/${encodeURIComponent(button.dataset.roomJoin)}`);
     } catch (error) {
@@ -453,7 +457,7 @@ function renderCreate(container, user, presetGameId) {
   });
   updatePlayerLimits();
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const error = container.querySelector("#room-create-error");
     error.textContent = "";
@@ -491,9 +495,6 @@ function renderCreate(container, user, presetGameId) {
     };
 
     const room = {
-      id: createId(),
-      code: Math.random().toString(36).slice(2, 8).toUpperCase(),
-      inviteCode: Math.random().toString(36).slice(2, 10).toUpperCase(),
       gameId: chosenGame.id,
       name,
       description,
@@ -501,22 +502,14 @@ function renderCreate(container, user, presetGameId) {
       visibility: data.get("visibility") === "private" ? "private" : "public",
       scheduledAt,
       rules,
-      hostId: user.id,
-      status: "open",
-      createdAt: new Date().toISOString(),
-      members: [{
-        userId: user.id,
-        role: "host",
-        joinedAt: new Date().toISOString()
-      }]
+      hostId: user.id
     };
 
     try {
-      const rooms = storage.getRooms();
-      rooms.unshift(room);
-      storage.saveRooms(rooms);
+      await ensurePublicProfile(user);
+      const roomId = await createOnlineRoom(room);
       notify("Комната создана. Добро пожаловать за стол!");
-      go(`#/rooms/${encodeURIComponent(room.id)}`);
+      go(`#/rooms/${encodeURIComponent(roomId)}`);
     } catch (saveError) {
       error.textContent = saveError.message || "Не удалось сохранить комнату.";
       error.classList.add("is-visible");
@@ -597,8 +590,14 @@ function readableRuleSettings(room) {
   return rows;
 }
 
-function renderRoom(container, roomId, user, inviteCode = "") {
-  const room = getRoomById(roomId);
+async function renderRoom(container, roomId, user, inviteCode = "") {
+  await ensurePublicProfile(user);
+  let room = await getOnlineRoom(roomId);
+  if (!room && inviteCode) {
+    await joinOnlineRoom(roomId, inviteCode);
+    notify("Ты присоединился к приватной комнате по приглашению.");
+    room = await getOnlineRoom(roomId);
+  }
   if (!room) {
     container.innerHTML = `
       <section class="room-not-found page-enter">
@@ -628,11 +627,11 @@ function renderRoom(container, roomId, user, inviteCode = "") {
           <button class="room-button room-button--primary room-button--large" id="room-accept-invite" type="button">Принять приглашение ↗</button>
           <a class="room-back-link" style="display:block;margin-top:18px" href="#/rooms">Не сейчас · к комнатам</a>
         </section>`;
-      container.querySelector("#room-accept-invite").addEventListener("click", () => {
+      container.querySelector("#room-accept-invite").addEventListener("click", async () => {
         try {
-          joinRoom(room.id, user, inviteCode);
+          await joinOnlineRoom(room.id, inviteCode);
           notify("Ты присоединился к приватной комнате.");
-          renderRoom(container, room.id, user);
+          await renderRoom(container, room.id, user);
         } catch (error) {
           notify(error.message, "error");
         }
@@ -649,11 +648,11 @@ function renderRoom(container, roomId, user, inviteCode = "") {
     return;
   }
 
-  const host = storage.getUserById(room.hostId);
+  const host = room.host || storage.getUserById(room.hostId);
   const status = getStatus(room);
   const members = (room.members || []).map((entry) => ({
     ...entry,
-    user: storage.getUserById(entry.userId)
+    user: entry.user || storage.getUserById(entry.userId)
   })).filter((entry) => entry.user);
   const full = members.length >= room.maxPlayers;
   const isHost = room.hostId === user.id;
@@ -720,7 +719,7 @@ function renderRoom(container, roomId, user, inviteCode = "") {
           <section class="room-panel room-invite-panel">
             <span class="eyebrow">ПРИГЛАСИ ДРУЗЕЙ</span>
             <h3>Собирай свою команду</h3>
-            <p>Поделись ссылкой на комнату. Для приватной комнаты ведущий должен добавить участника лично.</p>
+            <p>Поделись ссылкой на комнату. В приватную комнату друзья смогут войти по этой ссылке-приглашению.</p>
             <button class="room-button room-button--soft room-button--full" type="button" id="room-copy-link">Скопировать ссылку ↗</button>
           </section>
         </aside>
@@ -762,9 +761,9 @@ function renderRoom(container, roomId, user, inviteCode = "") {
   const chatMount = container.querySelector("#room-chat-mount");
   if (chatMount) renderRoomChat(chatMount, room, user);
 
-  container.querySelector("#room-join")?.addEventListener("click", () => {
+  container.querySelector("#room-join")?.addEventListener("click", async () => {
     try {
-      joinRoom(room.id, user);
+      await joinOnlineRoom(room.id);
       notify("Добро пожаловать за стол!");
       renderRoom(container, room.id, user);
     } catch (error) {
@@ -772,53 +771,47 @@ function renderRoom(container, roomId, user, inviteCode = "") {
     }
   });
 
-  container.querySelector("#room-leave")?.addEventListener("click", () => {
+  container.querySelector("#room-leave")?.addEventListener("click", async () => {
     try {
-      updateRoom(room.id, (current) => {
-        current.members = current.members.filter((entry) => entry.userId !== user.id);
-        return current;
-      });
-      addRoomSystemMessage(room.id, `${user.username} покинул комнату.`);
+      await leaveOnlineRoom(room.id);
       notify("Ты покинул комнату.");
       go("#/rooms");
-    } catch (error) {
-      notify(error.message, "error");
-    }
+    } catch (error) { notify(error.message, "error"); }
   });
 
-  container.querySelector("#room-start")?.addEventListener("click", () => {
-    updateRoom(room.id, (current) => ({ ...current, status: "playing" }));
-    addRoomSystemMessage(room.id, "Ведущий начал игру.");
-    notify("Игра началась!");
-    renderRoom(container, room.id, user);
+  container.querySelector("#room-start")?.addEventListener("click", async () => {
+    try {
+      await setOnlineRoomStatus(room.id, "playing");
+      notify("Игра началась!");
+      await renderRoom(container, room.id, user);
+    } catch (error) { notify(error.message, "error"); }
   });
 
-  container.querySelector("#room-close")?.addEventListener("click", () => {
+  container.querySelector("#room-close")?.addEventListener("click", async () => {
     if (!window.confirm("Завершить комнату? Новые игроки не смогут присоединиться.")) return;
-    updateRoom(room.id, (current) => ({ ...current, status: "closed" }));
-    addRoomSystemMessage(room.id, "Ведущий завершил комнату.");
-    notify("Комната завершена.");
-    renderRoom(container, room.id, user);
+    try {
+      await setOnlineRoomStatus(room.id, "closed");
+      notify("Комната завершена.");
+      await renderRoom(container, room.id, user);
+    } catch (error) { notify(error.message, "error"); }
   });
 
-  container.querySelector("#room-delete")?.addEventListener("click", () => {
+  container.querySelector("#room-delete")?.addEventListener("click", async () => {
     if (!window.confirm("Удалить комнату без возможности восстановления?")) return;
-    storage.saveRooms(storage.getRooms().filter((current) => current.id !== room.id));
-    notify("Комната удалена.");
-    go("#/rooms");
+    try {
+      await deleteOnlineRoom(room.id);
+      notify("Комната удалена.");
+      go("#/rooms");
+    } catch (error) { notify(error.message, "error"); }
   });
 
   container.querySelectorAll("[data-kick]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const userId = button.dataset.kick;
-      const removedUser = storage.getUserById(userId);
-      updateRoom(room.id, (current) => {
-        current.members = current.members.filter((entry) => entry.userId !== userId);
-        return current;
-      });
-      addRoomSystemMessage(room.id, `${removedUser?.username || "Игрок"} удалён ведущим из комнаты.`);
-      notify("Игрок удалён из комнаты.");
-      renderRoom(container, room.id, user);
+    button.addEventListener("click", async () => {
+      try {
+        await removeOnlineRoomMember(room.id, button.dataset.kick);
+        notify("Игрок удалён из комнаты.");
+        await renderRoom(container, room.id, user);
+      } catch (error) { notify(error.message, "error"); }
     });
   });
 
@@ -833,7 +826,7 @@ function renderRoom(container, roomId, user, inviteCode = "") {
   });
 }
 
-export function renderRooms(container, route = "/rooms") {
+export async function renderRooms(container, route = "/rooms") {
   ensureStyles();
   const user = getCurrentUser();
   if (!user) {
@@ -843,7 +836,7 @@ export function renderRooms(container, route = "/rooms") {
 
   const [path, query = ""] = route.split("?");
   if (path === "/rooms" || path === "/rooms/") {
-    renderList(container, user);
+    renderList(container, user).catch((error) => { container.innerHTML = "<p>Не удалось загрузить комнаты: " + escapeHTML(error.message) + "</p>"; });
     return;
   }
   if (path === "/rooms/new") {
@@ -858,5 +851,5 @@ export function renderRooms(container, route = "/rooms") {
     return;
   }
   const params = new URLSearchParams(query);
-  renderRoom(container, roomId, user, params.get("invite") || "");
+  renderRoom(container, roomId, user, params.get("invite") || "").catch((error) => { container.innerHTML = "<p>Не удалось открыть комнату: " + escapeHTML(error.message) + "</p>"; });
 }
