@@ -1,0 +1,26 @@
+name: Codenames engine tests
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/codenames-game/**"
+      - ".github/workflows/codenames-engine-tests.yml"
+  push:
+    branches:
+      - supabase-integration
+    paths:
+      - "supabase/functions/codenames-game/**"
+      - ".github/workflows/codenames-engine-tests.yml"
+
+jobs:
+  codenames-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check Edge Function
+        run: deno check supabase/functions/codenames-game/index.ts
+      - name: Run Codenames rules tests
+        run: deno test supabase/functions/codenames-game/engine.test.ts
