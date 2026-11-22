@@ -207,6 +207,8 @@ export function getMafiaPrivateState(state: MafiaState, playerId: string) {
   return {
     role,
     mafiaTeammates: role === "mafia" ? livingRole(state, "mafia").filter((id) => id !== playerId) : [],
+    hasMafiaVoted: Boolean(state.mafiaVotes[playerId]),
+    hasVoted: Boolean(state.votes[playerId]),
     inspection: state.lastInspection?.detectiveId === playerId ? {
       targetId: state.lastInspection.targetId, isMafia: state.lastInspection.isMafia
     } : null
