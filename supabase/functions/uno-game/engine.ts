@@ -138,17 +138,21 @@ export function applyUnoAction(
   random: () => number = Math.random
 ): UnoState {
   const state: UnoState = structuredClone(source);
-  assertCurrentPlayer(state, playerId);
   const hand = state.hands[playerId];
 
+  // UNO is announced immediately after the play that leaves one card.
+  // The next player may catch the offender until their first action.
   if (action.type === "call_uno") {
-    if (hand.length !== 1) throw new Error("Объявить UNO можно, когда у тебя осталась одна карта.");
+    if (state.status !== "active" || !state.players.includes(playerId)) throw new Error("Ты не участник активной партии.");
+    if (hand?.length !== 1 || state.unoPenaltyPlayerId !== playerId) throw new Error("Сейчас нельзя объявить UNO.");
     if (state.unoCalledBy.includes(playerId)) throw new Error("UNO уже объявлено.");
     state.unoCalledBy.push(playerId);
-    if (state.unoPenaltyPlayerId === playerId) state.unoPenaltyPlayerId = null;
+    state.unoPenaltyPlayerId = null;
     state.lastAction = { type: "call_uno", playerId };
     return state;
   }
+
+  assertCurrentPlayer(state, playerId);
 
   if (action.type === "catch_uno") {
     const offender = state.unoPenaltyPlayerId;
