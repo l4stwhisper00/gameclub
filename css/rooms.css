@@ -456,3 +456,60 @@ html[data-theme="sakura"] .room-form-card,html[data-theme="sakura"] .room-panel,
  :root[data-theme] .chess-result { position:fixed;inset:0;border-radius:0; }
  :root[data-theme] .chess-result__card { max-height:calc(100dvh - 32px);overflow:auto; }
 }
+
+
+/* Room settings: render as one calm specification list, not stacked striped tiles.
+   The previous themed rule applied a filled background and border to every row,
+   creating the broken banding visible on the room detail screen. */
+html[data-theme] .room-panel .room-rules-list {
+  display:grid;
+  gap:0;
+  overflow:hidden;
+  border-top:1px solid color-mix(in srgb,var(--theme-line) 78%,transparent);
+}
+html[data-theme] .room-panel .room-rule-row,
+html[data-theme] .room-panel .room-rules-list .room-rule-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  min-height:42px;
+  margin:0;
+  padding:10px 0;
+  border:0;
+  border-bottom:1px solid color-mix(in srgb,var(--theme-line) 78%,transparent);
+  border-radius:0;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+html[data-theme] .room-panel .room-rules-list .room-rule-row:last-child {
+  border-bottom:0;
+}
+html[data-theme] .room-panel .room-rule-row span {
+  flex:1 1 auto;
+  min-width:0;
+  color:var(--theme-muted);
+  line-height:1.5;
+}
+html[data-theme] .room-panel .room-rule-row strong {
+  flex:0 1 55%;
+  color:var(--theme-text);
+  text-align:right;
+  line-height:1.5;
+  overflow-wrap:anywhere;
+}
+html[data-theme="sakura"] .room-panel .room-rules-list {
+  border-top-color:rgba(222,164,185,.18);
+}
+html[data-theme="sakura"] .room-panel .room-rules-list .room-rule-row {
+  border-bottom-color:rgba(222,164,185,.15);
+}
+@media(max-width:520px) {
+  html[data-theme] .room-panel .room-rules-list .room-rule-row {
+    align-items:flex-start;
+    gap:10px;
+  }
+  html[data-theme] .room-panel .room-rules-list .room-rule-row strong {
+    flex-basis:48%;
+  }
+}
