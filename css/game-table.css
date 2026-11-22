@@ -19,3 +19,10 @@
 .gt-generic-board{display:grid;justify-items:center;gap:8px}.gt-generic-board span{font-size:50px}.gt-generic-board strong{font:600 14px var(--font-display)}.gt-generic-board small{color:#9692a8;font-size:9px}
 @media(max-width:760px){.game-table__layout{grid-template-columns:1fr}.game-table__aside{grid-template-columns:1fr 1fr}.game-table__head{flex-direction:column}.game-table__surface{min-height:190px}}
 @media(max-width:480px){.game-table{padding:12px}.game-table__aside{grid-template-columns:1fr}.game-table__player-list{grid-template-columns:1fr}.gt-card-row{grid-template-columns:1fr}.gt-feature-card{min-height:0}.gt-role-table{grid-template-columns:1fr 1fr}.gt-phase-track{grid-column:1/-1;grid-row:2;grid-auto-flow:column;justify-content:center}.gt-phase-track i{width:17px;height:1px}.gt-word-tile{min-height:27px}.gt-card-fan span{width:51px;font-size:21px}.game-table__foot{display:grid;gap:6px}}
+
+
+/* Match the game-table module to the refreshed club identity */
+.game-table { border:1px solid rgba(236,231,216,.12);border-radius:10px;background:#1b1e19;box-shadow:none; }
+.game-table__head h2,.game-table__title { font-family:'DM Serif Display',Georgia,serif;font-weight:400;letter-spacing:0; }
+.game-table__surface { border-color:rgba(236,231,216,.12);border-radius:8px;background:#171a15; }
+.game-table__aside>* { border-color:rgba(236,231,216,.1);border-radius:7px;background:#171a15; }

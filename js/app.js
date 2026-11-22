@@ -74,7 +74,7 @@ function authShell({ eyebrow, title, subtitle, submitLabel, fields, switchText, 
       </div>
       <section class="auth-card">
         <h2>${mode === "register" ? "Создать аккаунт" : "С возвращением"}</h2>
-        <p class="auth-subtitle">${mode === "register" ? "Займи своё место за игровым столом." : "Твоя следующая игровая история уже ждёт."}</p>
+        <p class="auth-subtitle">${mode === "register" ? "Займи своё место за игровым столом." : "Твои комнаты и любимые игры уже здесь."}</p>
         <form id="auth-form" novalidate>
           ${fields}
           <p id="form-error" class="form-error" role="alert"></p>
@@ -92,7 +92,7 @@ function renderLogin() {
     mode: "login",
     eyebrow: "РАДЫ СНОВА ТЕБЯ ВИДЕТЬ",
     title: 'Вернись за<br><span class="gradient-text">игровой стол.</span>',
-    subtitle: "Здесь собираются команды, рождаются легенды и каждый бросок кубика меняет ход истории.",
+    subtitle: "Собирай компанию, выбирай настольные игры и проводи время вместе — без лишней подготовки.",
     submitLabel: "Войти в клуб",
     switchText: "Впервые у нас?",
     switchHref: "#/register",
@@ -114,8 +114,8 @@ function renderRegister() {
   app.innerHTML = authShell({
     mode: "register",
     eyebrow: "ТВОЯ ИСТОРИЯ НАЧИНАЕТСЯ ЗДЕСЬ",
-    title: 'Найди свою<br><span class="gradient-text">игровую стаю.</span>',
-    subtitle: "Создай аккаунт, выбери любимые игры и найди людей, с которыми даже обычный вечер станет приключением.",
+    title: 'Собери свою<br><span class="gradient-text">компанию.</span>',
+    subtitle: "Создай профиль, выбери любимые игры и приглашай друзей за общий стол.",
     submitLabel: "Вступить в клуб",
     switchText: "Уже есть аккаунт?",
     switchHref: "#/login",
@@ -183,22 +183,25 @@ function renderHome() {
   app.innerHTML = `
     <section class="home-hero page-enter">
       <div class="home-hero-copy">
-        <span class="eyebrow">МЕСТО ВСТРЕЧИ ИГРОКОВ</span>
-        <h1 class="display-title">Один стол.<br> <span class="gradient-text">Тысячи историй.</span></h1>
-        <p class="lead">От эпичных приключений в D&D до жарких партий в Мафию. Собирай друзей, открывай новые игры и создавай свои легенды.</p>
+        <span class="eyebrow">GAMECLUB · PLAY TOGETHER</span>
+        <h1 class="display-title">Хорошие игры.<br><span class="gradient-text">Своя компания.</span></h1>
+        <p class="lead">Место, где проще собраться за одним столом. Выбирай игру, создавай комнату и приглашай тех, с кем хочется провести вечер.</p>
         <div class="home-actions">
-          <a class="button button--primary" href="#/games">Открыть каталог <span>↗</span></a>
-          <a class="button button--ghost" href="#/rooms">${user ? "Комнаты клуба" : "Найти свою команду"} <span>⌁</span></a>
+          <a class="button button--primary" href="#/games">Смотреть игры <span aria-hidden="true">↗</span></a>
+          <a class="button button--ghost" href="#/rooms">${user ? "Открыть комнаты" : "Найти компанию"}</a>
         </div>
       </div>
-      <div class="hero-art" aria-hidden="true"><div class="hero-ring"></div><div class="hero-glyph"><span>🎲</span></div></div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="hero-ring"></div>
+        <div class="hero-glyph"><span>♟</span></div>
+      </div>
     </section>
-    <div class="feature-strip">
-      <div class="feature-tile"><strong>✦ 20+</strong><span>Настольных и ролевых игр</span></div>
-      <div class="feature-tile"><strong>♧ Свои</strong><span>Комнаты и игровые правила</span></div>
-      <div class="feature-tile"><strong>⌁ Вместе</strong><span>Общение и новые знакомства</span></div>
+    <div class="feature-strip" aria-label="Возможности GameClub">
+      <div class="feature-tile"><strong>20+ игр</strong><span>От быстрых партий до больших кампаний</span></div>
+      <div class="feature-tile"><strong>Свои комнаты</strong><span>Настраивай правила и собирай игроков</span></div>
+      <div class="feature-tile"><strong>Играйте вместе</strong><span>Общение и партии в одном месте</span></div>
     </div>
-    <p class="section-kicker" style="margin-top:28px">Выбирай игру, создавай комнату и собирай свою команду — таверна уже открыта.</p>`;
+    <p class="section-kicker">Начни с выбора игры. Остальное — дело компании.</p>`;
 }
 
 function renderProfile() {
@@ -213,7 +216,7 @@ function renderProfile() {
   app.innerHTML = `
     <section class="profile-wrap page-enter">
       <div class="profile-head">
-        <div><span class="eyebrow">ЛИЧНЫЙ КАБИНЕТ</span><h1 class="display-title">Твоё место<br><span class="gradient-text">в таверне.</span></h1></div>
+        <div><span class="eyebrow">ЛИЧНЫЙ КАБИНЕТ</span><h1 class="display-title">Твоё место<br><span class="gradient-text">в GameClub.</span></h1></div>
         <div class="profile-actions">
           <a class="button button--ghost button--small" href="${publicUrl}">Публичная страница ↗</a>
           <a class="button button--primary button--small" href="#/settings">Настроить профиль <span>✧</span></a>
