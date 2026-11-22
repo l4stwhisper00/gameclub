@@ -6,7 +6,7 @@ export interface DndCharacter {
   inspiration: boolean; deathSaves: { successes: number; failures: number };
 }
 export interface DndNpc {
-  id: string; name: string; ac: number; maxHp: number; hp: number; initiativeBonus: number;
+  id: string; name: string; ac: number; maxHp: number; hp: number; tempHp: number; initiativeBonus: number;
   conditions: string[]; kind: "npc";
 }
 export interface DndState {
@@ -156,7 +156,7 @@ export function applyDndAction(source: DndState, playerId: string, action: DndAc
       throw new Error("Проверь имя, HP, КД и бонус инициативы противника.");
     }
     const id = "npc-" + crypto.randomUUID();
-    state.npcs[id] = { id, name, ac: action.ac, maxHp: action.maxHp, hp: action.maxHp, initiativeBonus: action.initiativeBonus, conditions: [], kind: "npc" };
+    state.npcs[id] = { id, name, ac: action.ac, maxHp: action.maxHp, hp: action.maxHp, tempHp: 0, initiativeBonus: action.initiativeBonus, conditions: [], kind: "npc" };
     addEvent(state, "npc", name + " добавлен на поле.", playerId);
     return state;
   }
