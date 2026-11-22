@@ -183,22 +183,25 @@ function renderHome() {
   app.innerHTML = `
     <section class="home-hero page-enter">
       <div class="home-hero-copy">
-        <span class="eyebrow">МЕСТО ВСТРЕЧИ ИГРОКОВ</span>
-        <h1 class="display-title">Один стол.<br> <span class="gradient-text">Тысячи историй.</span></h1>
-        <p class="lead">От эпичных приключений в D&D до жарких партий в Мафию. Собирай друзей, открывай новые игры и создавай свои легенды.</p>
+        <span class="eyebrow">GAMECLUB · PLAY TOGETHER</span>
+        <h1 class="display-title">Хорошие игры.<br><span class="gradient-text">Своя компания.</span></h1>
+        <p class="lead">Место, где проще собраться за одним столом. Выбирай игру, создавай комнату и приглашай тех, с кем хочется провести вечер.</p>
         <div class="home-actions">
-          <a class="button button--primary" href="#/games">Открыть каталог <span>↗</span></a>
-          <a class="button button--ghost" href="#/rooms">${user ? "Комнаты клуба" : "Найти свою команду"} <span>⌁</span></a>
+          <a class="button button--primary" href="#/games">Смотреть игры <span aria-hidden="true">↗</span></a>
+          <a class="button button--ghost" href="#/rooms">${user ? "Открыть комнаты" : "Найти компанию"}</a>
         </div>
       </div>
-      <div class="hero-art" aria-hidden="true"><div class="hero-ring"></div><div class="hero-glyph"><span>🎲</span></div></div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="hero-ring"></div>
+        <div class="hero-glyph"><span>♟</span></div>
+      </div>
     </section>
-    <div class="feature-strip">
-      <div class="feature-tile"><strong>✦ 20+</strong><span>Настольных и ролевых игр</span></div>
-      <div class="feature-tile"><strong>♧ Свои</strong><span>Комнаты и игровые правила</span></div>
-      <div class="feature-tile"><strong>⌁ Вместе</strong><span>Общение и новые знакомства</span></div>
+    <div class="feature-strip" aria-label="Возможности GameClub">
+      <div class="feature-tile"><strong>20+ игр</strong><span>От быстрых партий до больших кампаний</span></div>
+      <div class="feature-tile"><strong>Свои комнаты</strong><span>Настраивай правила и собирай игроков</span></div>
+      <div class="feature-tile"><strong>Играйте вместе</strong><span>Общение и партии в одном месте</span></div>
     </div>
-    <p class="section-kicker" style="margin-top:28px">Выбирай игру, создавай комнату и собирай свою команду — таверна уже открыта.</p>`;
+    <p class="section-kicker">Начни с выбора игры. Остальное — дело компании.</p>`;
 }
 
 function renderProfile() {
