@@ -80,6 +80,8 @@ export async function renderChessGame(container, room, user) {
   let busy = false;
   let channel = null;
   let disposed = false;
+  // Keep the finished result visible across transient realtime refreshes.
+  let finishedResultRevision = null;
 
   function getChess() {
     const chess = new Chess();
@@ -200,9 +202,15 @@ export async function renderChessGame(container, room, user) {
   function renderResultPanel() {
     const existing = container.querySelector(".chess-result");
     if (gameState?.status !== "finished") {
-      existing?.remove();
+      // A stale/intermediate active snapshot must not dismiss the result screen.
+      // A genuinely newer revision (host started a replay) clears the latch.
+      if (finishedResultRevision !== null && revision > finishedResultRevision) {
+        finishedResultRevision = null;
+        existing?.remove();
+      }
       return;
     }
+    finishedResultRevision = Math.max(finishedResultRevision ?? -1, revision);
     const result = resultDetails();
     const panel = document.createElement("section");
     panel.className = `chess-result chess-result--${result.kind}`;
