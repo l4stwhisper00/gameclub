@@ -1,0 +1,26 @@
+name: Alias engine tests
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/alias-game/**"
+      - ".github/workflows/alias-engine-tests.yml"
+  push:
+    branches:
+      - supabase-integration
+    paths:
+      - "supabase/functions/alias-game/**"
+      - ".github/workflows/alias-engine-tests.yml"
+
+jobs:
+  alias-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check Edge Function
+        run: deno check supabase/functions/alias-game/index.ts
+      - name: Run Alias rules tests
+        run: deno test supabase/functions/alias-game/engine.test.ts
