@@ -931,13 +931,14 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
   });
 
   container.querySelector("#room-finish-game")?.addEventListener("click", async (event) => {
+    const button = event.currentTarget;
     const accepted = await confirmRoomAction({
       title: "Завершить партию?",
       message: "Игра закончится, а комната вернётся в лобби. Участники и чат останутся на месте.",
       confirmLabel: "Завершить партию"
     });
     if (!accepted) return;
-    await runRoomAction(event.currentTarget, async () => {
+    await runRoomAction(button, async () => {
       stopRoomRealtime();
       await setOnlineRoomStatus(room.id, "open");
       await renderRoom(container, room.id, user);
@@ -945,6 +946,7 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
   });
 
   container.querySelector("#room-close")?.addEventListener("click", async (event) => {
+    const button = event.currentTarget;
     const accepted = await confirmRoomAction({
       title: "Закрыть комнату?",
       message: "Комната станет недоступна для новых игроков. Ты сможешь вернуть её в лобби или удалить позже.",
@@ -952,7 +954,7 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
       danger: false
     });
     if (!accepted) return;
-    await runRoomAction(event.currentTarget, async () => {
+    await runRoomAction(button, async () => {
       stopRoomRealtime();
       await setOnlineRoomStatus(room.id, "closed");
       await renderRoom(container, room.id, user);
@@ -967,6 +969,7 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
   });
 
   container.querySelector("#room-delete")?.addEventListener("click", async (event) => {
+    const button = event.currentTarget;
     const accepted = await confirmRoomAction({
       title: "Удалить комнату?",
       message: "Комната, список участников и её сообщения будут удалены без возможности восстановления.",
@@ -974,12 +977,12 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
       danger: true
     });
     if (!accepted) return;
-    const deleted = await runRoomAction(event.currentTarget, async () => {
+    const deleted = await runRoomAction(button, async () => {
       stopRoomRealtime();
       await deleteOnlineRoom(room.id);
       go("#/rooms");
     }, "Комната удалена.");
-    if (!deleted && event.currentTarget.isConnected) event.currentTarget.focus();
+    if (!deleted && button.isConnected) button.focus();
   });
 
   container.querySelectorAll("[data-kick]").forEach((button) => {
