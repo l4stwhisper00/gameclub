@@ -47,6 +47,7 @@ export async function renderChessGame(container, room, user) {
       <div class="chess-game__layout">
         <div class="chess-game__board-wrap">
           <div class="chess-game__player chess-game__player--top" id="chess-opponent">Загрузка соперника…</div>
+          <button class="room-button room-button--primary chess-game__init" id="chess-init" type="button" hidden>Создать шахматную партию</button>
           <div class="chess-board" id="chess-board" aria-label="Шахматная доска"></div>
           <div class="chess-game__player chess-game__player--bottom" id="chess-self">${escapeHTML(user.username)}</div>
         </div>
@@ -61,6 +62,7 @@ export async function renderChessGame(container, room, user) {
     </section>`;
 
   const boardElement = container.querySelector("#chess-board");
+  const initButton = container.querySelector("#chess-init");
   const turnElement = container.querySelector("#chess-turn");
   const lastElement = container.querySelector("#chess-last");
   const movesElement = container.querySelector("#chess-moves");
@@ -184,9 +186,13 @@ export async function renderChessGame(container, room, user) {
       revision = -1;
       boardElement.innerHTML = "";
       turnElement.textContent = "Ожидаем начала партии.";
-      noticeElement.textContent = "Ведущий может создать шахматную партию из панели управления комнатой.";
+      noticeElement.textContent = user.id === room.hostId
+        ? "Эта комната была запущена до появления шахматного модуля. Создай новую партию, чтобы открыть доску."
+        : "Ожидаем, когда ведущий создаст шахматную партию.";
+      initButton.hidden = user.id !== room.hostId;
       return;
     }
+    initButton.hidden = true;
     if (Number(data.revision) < revision) return;
     gameState = data.state;
     revision = Number(data.revision);
@@ -239,6 +245,31 @@ export async function renderChessGame(container, room, user) {
     } else {
       selectedSquare = null;
       render();
+    }
+  });
+
+  initButton.addEventListener("click", async () => {
+    if (busy) return;
+    busy = true;
+    initButton.disabled = true;
+    initButton.textContent = "Создаём партию…";
+    try {
+      const data = await invokeChess({
+        action: "start",
+        room_id: room.id,
+        opponent_mode: room.rules?.game?.opponentMode === "bot" ? "bot" : "human",
+        bot_difficulty: room.rules?.game?.botDifficulty || "medium"
+      });
+      gameState = data.state;
+      revision = Number(data.revision);
+      initButton.hidden = true;
+      render();
+    } catch (error) {
+      noticeElement.textContent = error.message;
+      initButton.disabled = false;
+      initButton.textContent = "Создать шахматную партию";
+    } finally {
+      busy = false;
     }
   });
 
