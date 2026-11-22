@@ -130,8 +130,8 @@ begin
   insert into public.club_rooms(id, room_code, invite_code, game_id, name, description, max_players, visibility, scheduled_at, rules, host_id)
   values (
     v_room_id,
-    upper(substr(encode(gen_random_bytes(8),'hex'),1,6)),
-    upper(substr(encode(gen_random_bytes(12),'hex'),1,10)),
+    upper(substr(encode(extensions.gen_random_bytes(8),'hex'),1,6)),
+    upper(substr(encode(extensions.gen_random_bytes(12),'hex'),1,10)),
     p_game_id, trim(p_name), left(coalesce(p_description,''),280),
     p_max_players, p_visibility, p_scheduled_at, coalesce(p_rules,'{}'::jsonb), v_user
   );

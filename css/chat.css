@@ -62,3 +62,11 @@
   .chat-message { animation:none; }
   .chat-send-button { transition:none; }
 }
+
+
+/* Quiet, readable room chat */
+.room-chat,.chat-panel { border-color:rgba(236,231,216,.12);border-radius:9px;background:#1b1e19;box-shadow:none; }
+.room-chat__header,.chat-panel__header { border-color:rgba(236,231,216,.1); }
+.room-chat__message,.chat-message { border-radius:7px; }
+.room-chat input,.room-chat textarea,.chat-panel input { border-color:rgba(236,231,216,.14);border-radius:7px;background:#141712;color:#f0eee6; }
+.room-chat button,.chat-panel button { border-radius:6px; }
