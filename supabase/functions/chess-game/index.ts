@@ -230,6 +230,23 @@ Deno.serve(async (req) => {
       return json({ state, revision: 0 });
     }
 
+    if (action === "return_to_lobby") {
+      if (room.host_id !== user.id) throw new HttpError(403, "Вернуть комнату в лобби может только ведущий.");
+      const { data: gameRow, error: gameError } = await admin
+        .from("club_room_game_states")
+        .select("state")
+        .eq("room_id", roomId)
+        .maybeSingle();
+      if (gameError) throw new HttpError(500, gameError.message);
+      if (!gameRow || gameRow.state?.status !== "finished") {
+        throw new HttpError(409, "Сначала заверши партию.");
+      }
+      const { error: roomStatusError } = await admin.from("club_rooms")
+        .update({ status: "open" }).eq("id", roomId).eq("host_id", user.id);
+      if (roomStatusError) throw new HttpError(500, roomStatusError.message);
+      return json({ success: true, status: "open" });
+    }
+
     if (action === "move") {
       if (room.status !== "playing") throw new HttpError(409, "Партия сейчас не активна.");
       const { data: gameRow, error: gameError } = await admin
@@ -284,11 +301,9 @@ Deno.serve(async (req) => {
       }
 
       const saved = await saveState(admin, roomId, nextState, expectedRevision, user.id);
-      if (nextState.status === "finished") {
-        const { error: roomStatusError } = await admin.from("club_rooms")
-          .update({ status: "open" }).eq("id", roomId);
-        if (roomStatusError) throw new HttpError(500, roomStatusError.message);
-      }
+      // Keep the room in "playing" until a participant explicitly chooses
+      // the result-screen action. This prevents the room listener from
+      // navigating away while the result dialog is visible.
       return json({ state: saved.state, revision: saved.revision });
     }
 
@@ -313,10 +328,8 @@ Deno.serve(async (req) => {
         updatedAt: new Date().toISOString()
       };
       const saved = await saveState(admin, roomId, nextState, Number(gameRow.revision), user.id);
-      // A resignation ends the match and returns everyone to the room lobby.
-      const { error: roomStatusError } = await admin.from("club_rooms")
-        .update({ status: "open" }).eq("id", roomId);
-      if (roomStatusError) throw new HttpError(500, roomStatusError.message);
+      // The result stays on screen. Returning to the lobby is a separate,
+      // explicit action initiated from the result dialog.
       return json({ state: saved.state, revision: saved.revision });
     }
 
