@@ -382,3 +382,189 @@ html[data-theme="dynamic"] .button--primary { color:#061728;background:#00d2f4;b
 .theme-preview--sakura .theme-preview__sidebar { background:rgba(173,49,88,.08); }
 .theme-preview--dynamic { border:1px solid rgba(0,210,244,.4);background:repeating-linear-gradient(130deg,#06182b 0 34px,#073a62 35px 40px,#06182b 41px 68px); }
 .theme-preview--dynamic .theme-preview__buttons i:first-child { border-radius:3px;background:#00d2f4; }
+
+
+/* ============================================================
+   STRONG ART-DIRECTION OVERRIDE
+   Each theme now changes the page composition and component
+   language, not just its accent colors.
+   ============================================================ */
+html[data-theme] {
+  --theme-bg:#111713; --theme-panel:#1d2520; --theme-card:#222c26;
+  --theme-line:rgba(231,241,229,.12); --theme-text:#f1f4ec; --theme-muted:#a9b5a9;
+  --theme-accent:#b9ef72; --gc-radius:16px; --gc-button-radius:11px;
+  --gc-font:'DM Sans',sans-serif; --gc-shadow:0 16px 42px rgba(0,0,0,.2);
+  --gc-page-bg:radial-gradient(ellipse at 82% 20%,rgba(185,239,114,.10),transparent 32%),#141916;
+  --gc-hero-bg:transparent; --gc-card-border:1px solid var(--theme-line);
+  --gc-nav-active:color-mix(in srgb,var(--theme-accent) 17%,transparent);
+}
+html[data-theme] body { color:var(--theme-text);background:var(--gc-page-bg)!important;background-attachment:fixed!important; }
+html[data-theme] .topbar { color:var(--theme-text);background:color-mix(in srgb,var(--theme-bg) 91%,transparent)!important;border-color:var(--theme-line); }
+html[data-theme] .brand-mark { color:var(--theme-accent);background:color-mix(in srgb,var(--theme-accent) 14%,var(--theme-panel));border:1px solid var(--theme-line);border-radius:var(--gc-mark-radius,12px);box-shadow:none; }
+html[data-theme] .brand-name,html[data-theme] .nav-link:hover,html[data-theme] .nav-link.active { color:var(--theme-text); }
+html[data-theme] .brand-name span,html[data-theme] .eyebrow,html[data-theme] .form-field label { color:var(--theme-accent); }
+html[data-theme] .eyebrow::before { background:var(--theme-accent); }
+html[data-theme] .app-shell { font-family:var(--gc-font); }
+html[data-theme] .display-title,html[data-theme] .auth-card h2,html[data-theme] .settings-section-title,html[data-theme] .profile-name,html[data-theme] .feature-tile strong {
+  font-family:var(--gc-display,var(--gc-font));font-weight:var(--gc-heading-weight,800);letter-spacing:var(--gc-heading-spacing,-.045em);color:var(--theme-text);
+}
+html[data-theme] .display-title { line-height:var(--gc-heading-line,1.04); }
+html[data-theme] .gradient-text { color:var(--theme-accent);background:none;-webkit-text-fill-color:currentColor; }
+html[data-theme] .lead,html[data-theme] .section-kicker,html[data-theme] .auth-subtitle,html[data-theme] .profile-bio { color:var(--theme-muted); }
+html[data-theme] .button { border-radius:var(--gc-button-radius);font-family:var(--gc-font);font-weight:800;box-shadow:none; }
+html[data-theme] .button--primary { color:var(--gc-button-text,#101510);background:var(--gc-button-bg,var(--theme-accent));border:var(--gc-button-border,1px solid transparent); }
+html[data-theme] .button--primary:hover { color:var(--gc-button-text,#101510);background:var(--gc-button-hover,var(--theme-accent));box-shadow:var(--gc-button-shadow,none); }
+html[data-theme] .button--ghost { color:var(--theme-text);border-color:var(--theme-line);background:var(--gc-ghost-bg,transparent); }
+html[data-theme] .nav-link { padding:9px 13px;border-radius:var(--gc-nav-radius,8px); }
+html[data-theme] .nav-link.active { background:var(--gc-nav-active); }
+html[data-theme] .home-hero { position:relative;isolation:isolate;background:var(--gc-hero-bg);border-color:var(--theme-line);border-radius:var(--gc-hero-radius,0);padding:var(--gc-hero-padding,50px 0 58px); }
+html[data-theme] .hero-glyph { border-radius:var(--gc-art-radius,50%);border:var(--gc-art-border,1px solid var(--theme-line));background:var(--gc-art-bg,radial-gradient(circle,var(--theme-card),transparent));box-shadow:var(--gc-art-shadow,none); }
+html[data-theme] .hero-glyph span { filter:var(--gc-art-filter,none); }
+html[data-theme] .hero-ring { border-color:var(--gc-ring, var(--theme-line)); }
+html[data-theme] .feature-strip { gap:var(--gc-feature-gap,0);border-color:var(--theme-line); }
+html[data-theme] .feature-tile { border:var(--gc-feature-border,0);border-radius:var(--gc-feature-radius,0);background:var(--gc-feature-bg,transparent); }
+html[data-theme] .feature-tile strong { color:var(--gc-feature-title,var(--theme-text)); }
+html[data-theme] .auth-card,html[data-theme] .profile-card,html[data-theme] .settings-form-card,html[data-theme] .feature-tile,html[data-theme] .profile-meta,html[data-theme] .game-chip,html[data-theme] .room-card,html[data-theme] .game-card {
+ border-radius:var(--gc-radius);border:var(--gc-card-border);background:var(--theme-panel);box-shadow:var(--gc-shadow);
+}
+html[data-theme] .auth-card::before,html[data-theme] .profile-card::before { display:var(--gc-card-highlight,none); }
+html[data-theme] .form-input { color:var(--theme-text);background:var(--gc-input-bg,var(--theme-bg));border:1px solid var(--theme-line);border-radius:var(--gc-input-radius,var(--gc-button-radius)); }
+html[data-theme] .form-input:focus { border-color:var(--theme-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--theme-accent) 15%,transparent); }
+html[data-theme] .profile-avatar { border-radius:var(--gc-avatar-radius,18px);background:var(--theme-card);border-color:var(--theme-line);box-shadow:none; }
+html[data-theme] .toast { color:var(--theme-text);background:var(--theme-panel);border-color:var(--theme-line); }
+html[data-theme] .theme-drawer { background:var(--theme-panel);color:var(--theme-text);border-color:var(--theme-line); }
+html[data-theme] .theme-card { border-radius:var(--gc-radius); }
+
+/* 1 Arcade — a compact console dashboard with beveled panels and glow rails. */
+html[data-theme="arcade"] {
+ --theme-bg:#090a18;--theme-panel:rgba(17,17,38,.96);--theme-card:#17172f;--theme-line:rgba(151,119,255,.32);--theme-text:#f4efff;--theme-muted:#aaa0c9;--theme-accent:#a78bfa;
+ --gc-radius:13px;--gc-button-radius:9px;--gc-nav-radius:7px;--gc-font:'DM Sans',sans-serif;--gc-heading-weight:900;
+ --gc-page-bg:radial-gradient(ellipse at 78% 22%,rgba(112,54,255,.28),transparent 34%),linear-gradient(145deg,#090a18 0%,#101027 58%,#080b19 100%);
+ --gc-hero-bg:linear-gradient(115deg,rgba(103,54,220,.12),transparent 54%);--gc-hero-radius:18px;--gc-hero-padding:50px 30px 58px;
+ --gc-art-radius:32% 68% 58% 42%;--gc-art-bg:radial-gradient(circle at 35% 30%,#50328d,#17172f 68%);--gc-art-shadow:0 0 75px rgba(124,58,237,.3),inset 0 0 35px rgba(167,139,250,.18);--gc-ring:rgba(167,139,250,.35);
+ --gc-card-border:1px solid rgba(167,139,250,.27);--gc-shadow:0 15px 45px rgba(0,0,0,.35),inset 0 1px rgba(255,255,255,.05);--gc-button-shadow:0 0 24px rgba(124,58,237,.35);
+}
+html[data-theme="arcade"] .topbar { border-bottom:1px solid rgba(167,139,250,.24); }
+html[data-theme="arcade"] .feature-strip { gap:12px;border:0; }
+html[data-theme="arcade"] .feature-tile { border:1px solid var(--theme-line);border-radius:13px;background:rgba(25,22,51,.8);padding:20px; }
+
+/* 2 Cozy — warm paper editorial layout, soft cream cards and green details. */
+html[data-theme="cozy"] {
+ color-scheme:light;--theme-bg:#e8e1d3;--theme-panel:#f4eee3;--theme-card:#fbf6eb;--theme-line:rgba(91,78,55,.18);--theme-text:#29291f;--theme-muted:#716f60;--theme-accent:#6c873e;
+ --gc-radius:22px;--gc-button-radius:14px;--gc-nav-radius:12px;--gc-mark-radius:50%;--gc-font:'DM Sans',sans-serif;--gc-display:Georgia,serif;--gc-heading-weight:700;--gc-heading-spacing:-.025em;
+ --gc-page-bg:radial-gradient(ellipse at 82% 20%,#fff8e8 0%,transparent 32%),linear-gradient(135deg,#e4dccb,#f0eadf 52%,#dfe5d6);
+ --gc-hero-bg:rgba(255,250,239,.55);--gc-hero-radius:26px;--gc-hero-padding:52px 42px;--gc-art-radius:48% 52% 60% 40%;--gc-art-bg:radial-gradient(circle at 35% 30%,#fff8dd,#c8c99c 70%);--gc-art-shadow:0 18px 45px rgba(96,91,60,.16);
+ --gc-card-border:1px solid rgba(102,94,67,.16);--gc-shadow:0 10px 30px rgba(84,74,48,.10);--gc-button-text:#fff;--gc-button-bg:#718d42;--gc-button-hover:#829d52;--gc-input-bg:#fffaf0;--gc-input-radius:12px;
+}
+html[data-theme="cozy"] .topbar { background:rgba(244,238,227,.9)!important; }
+html[data-theme="cozy"] .feature-strip { gap:12px;border:0; }
+html[data-theme="cozy"] .feature-tile { border:1px solid var(--theme-line);border-radius:18px;background:rgba(255,250,239,.75); }
+html[data-theme="cozy"] .hero-glyph span { filter:sepia(.22); }
+
+/* 3 Vivid — angular sport-game interface, color blocks and split composition. */
+html[data-theme="vivid"] {
+ --theme-bg:#032a45;--theme-panel:#063957;--theme-card:#08496b;--theme-line:rgba(35,194,255,.34);--theme-text:#f4fbff;--theme-muted:#b3d9e9;--theme-accent:#ff8a1c;
+ --gc-radius:7px;--gc-button-radius:6px;--gc-nav-radius:5px;--gc-font:'DM Sans',sans-serif;--gc-heading-weight:900;--gc-heading-spacing:-.06em;
+ --gc-page-bg:linear-gradient(125deg,#04263f 0 42%,#064b78 42.2% 68%,#05263d 68.2%);--gc-hero-bg:linear-gradient(120deg,#06466d 0 56%,rgba(0,183,255,.16) 56% 100%);--gc-hero-radius:5px;--gc-hero-padding:50px 28px;
+ --gc-art-radius:8px;--gc-art-bg:linear-gradient(140deg,#087bb0,#042a49);--gc-art-shadow:12px 14px 0 rgba(0,0,0,.2);--gc-ring:rgba(0,195,255,.42);
+ --gc-card-border:2px solid rgba(20,183,245,.3);--gc-shadow:7px 8px 0 rgba(0,12,25,.18);--gc-button-text:#17212a;--gc-button-bg:#ff8a1c;--gc-button-hover:#ffa443;--gc-feature-gap:10px;
+}
+html[data-theme="vivid"] .feature-tile { border:1px solid var(--theme-line);border-radius:6px;background:#06466d; }
+html[data-theme="vivid"] .home-hero { overflow:visible; }
+html[data-theme="vivid"] .hero-glyph { transform:rotate(4deg); }
+
+/* 4 Minimal — architectural monochrome, flat surfaces and strict grid. */
+html[data-theme="minimal"] {
+ --theme-bg:#111512;--theme-panel:#171c19;--theme-card:#1b211e;--theme-line:rgba(198,216,196,.14);--theme-text:#e5ebe2;--theme-muted:#9fa99f;--theme-accent:#9db397;
+ --gc-radius:3px;--gc-button-radius:3px;--gc-nav-radius:2px;--gc-font:Arial,sans-serif;--gc-heading-weight:500;--gc-heading-spacing:-.035em;
+ --gc-page-bg:linear-gradient(90deg,transparent 0 8%,rgba(198,216,196,.035) 8.05% 8.12%,transparent 8.2%),linear-gradient(#111512,#0e120f);
+ --gc-hero-bg:transparent;--gc-hero-radius:0;--gc-hero-padding:46px 0 56px;--gc-art-radius:4px;--gc-art-bg:transparent;--gc-art-shadow:none;--gc-ring:rgba(198,216,196,.18);
+ --gc-card-border:1px solid var(--theme-line);--gc-shadow:none;--gc-button-text:#101510;--gc-button-bg:#9db397;--gc-input-bg:#101411;
+}
+html[data-theme="minimal"] .feature-strip { grid-template-columns:1fr;border-top:1px solid var(--theme-line); }
+html[data-theme="minimal"] .feature-tile { min-height:0;padding:17px 5px;border-bottom:1px solid var(--theme-line);text-align:left; }
+html[data-theme="minimal"] .feature-tile strong { display:inline-block;min-width:130px;font-size:15px; }
+html[data-theme="minimal"] .auth-card,html[data-theme="minimal"] .profile-card { border:1px solid var(--theme-line); }
+html[data-theme="minimal"] .hero-glyph span { opacity:.55;filter:grayscale(1); }
+
+/* 5 Fantasy — illustrated-feeling parchment, medieval serif and gilded frames. */
+html[data-theme="fantasy"] {
+ --theme-bg:#211916;--theme-panel:#2a211c;--theme-card:#34271f;--theme-line:rgba(220,176,111,.3);--theme-text:#f2dfbf;--theme-muted:#c0a98a;--theme-accent:#e0b46e;
+ --gc-radius:11px;--gc-button-radius:7px;--gc-nav-radius:6px;--gc-font:Georgia,serif;--gc-display:Georgia,serif;--gc-heading-weight:700;--gc-heading-spacing:-.025em;
+ --gc-page-bg:radial-gradient(ellipse at 82% 24%,rgba(204,145,79,.3),transparent 32%),linear-gradient(120deg,#1b1513,#2b211b 56%,#171312);
+ --gc-hero-bg:linear-gradient(90deg,rgba(30,21,17,.96),rgba(30,21,17,.45));--gc-hero-radius:12px;--gc-hero-padding:52px 34px;
+ --gc-art-radius:12px 42% 12px 42%;--gc-art-bg:radial-gradient(circle at 60% 30%,#89613c,#2d211a 72%);--gc-art-shadow:0 0 65px rgba(205,145,74,.18);--gc-ring:rgba(224,180,110,.28);
+ --gc-card-border:1px solid rgba(220,176,111,.32);--gc-shadow:0 16px 40px rgba(0,0,0,.34),inset 0 0 0 1px rgba(220,176,111,.07);--gc-button-text:#281c13;--gc-button-bg:#e0b46e;--gc-button-hover:#f0c987;
+}
+html[data-theme="fantasy"] .feature-tile { border:1px solid var(--theme-line);border-radius:10px;background:rgba(61,43,30,.65); }
+html[data-theme="fantasy"] .hero-glyph span { filter:sepia(.7) drop-shadow(0 8px 15px rgba(0,0,0,.5)); }
+
+/* 6 Cyberpunk — neon glass, high contrast typography, magenta/cyan lighting. */
+html[data-theme="cyberpunk"] {
+ --theme-bg:#080b20;--theme-panel:rgba(13,14,39,.94);--theme-card:rgba(23,20,57,.92);--theme-line:rgba(52,224,255,.32);--theme-text:#e8faff;--theme-muted:#a8a8ca;--theme-accent:#ed3dc8;
+ --gc-radius:9px;--gc-button-radius:7px;--gc-nav-radius:5px;--gc-font:'DM Sans',sans-serif;--gc-heading-weight:900;--gc-heading-spacing:-.055em;
+ --gc-page-bg:radial-gradient(ellipse at 82% 30%,rgba(0,195,255,.3),transparent 28%),radial-gradient(ellipse at 72% 80%,rgba(231,37,202,.24),transparent 32%),linear-gradient(110deg,#07091c,#101039 55%,#08091d);
+ --gc-hero-bg:linear-gradient(105deg,rgba(8,9,31,.92),rgba(8,9,31,.18));--gc-hero-radius:10px;--gc-hero-padding:52px 28px;
+ --gc-art-radius:10px;--gc-art-bg:linear-gradient(145deg,#17114b,#063f6e 70%,#270c42);--gc-art-shadow:0 0 60px rgba(0,205,255,.2),0 0 45px rgba(237,61,200,.16);--gc-ring:rgba(0,224,255,.36);
+ --gc-card-border:1px solid rgba(60,223,255,.28);--gc-shadow:0 0 28px rgba(0,0,0,.32),inset 0 0 22px rgba(42,70,155,.08);--gc-button-text:#fff;--gc-button-bg:linear-gradient(100deg,#d42bb2,#5867ff);--gc-button-hover:linear-gradient(100deg,#ec45cb,#6f7aff);--gc-button-shadow:0 0 25px rgba(237,61,200,.3);
+}
+html[data-theme="cyberpunk"] .topbar { border-bottom:1px solid rgba(237,61,200,.32); }
+html[data-theme="cyberpunk"] .feature-tile { border:1px solid var(--theme-line);border-radius:8px;background:rgba(17,15,48,.76);backdrop-filter:blur(12px); }
+
+/* 7 Nature — organic asymmetry, soft moss surfaces and misty landscape palette. */
+html[data-theme="nature"] {
+ --theme-bg:#14251b;--theme-panel:rgba(29,48,35,.96);--theme-card:#263d2d;--theme-line:rgba(180,211,158,.2);--theme-text:#edf2e5;--theme-muted:#b3c1aa;--theme-accent:#a4d366;
+ --gc-radius:26px;--gc-button-radius:999px;--gc-nav-radius:999px;--gc-mark-radius:50%;--gc-font:'DM Sans',sans-serif;--gc-display:Georgia,serif;--gc-heading-weight:700;--gc-heading-spacing:-.035em;
+ --gc-page-bg:radial-gradient(ellipse at 80% 15%,rgba(158,201,166,.24),transparent 35%),linear-gradient(155deg,#14251b,#203c2b 55%,#102019);
+ --gc-hero-bg:linear-gradient(120deg,rgba(17,40,27,.55),rgba(43,83,51,.25));--gc-hero-radius:34px 12px 34px 12px;--gc-hero-padding:52px 34px;
+ --gc-art-radius:48% 52% 42% 58%;--gc-art-bg:radial-gradient(circle at 35% 28%,#6c9564,#243e2c 70%);--gc-art-shadow:0 20px 55px rgba(0,0,0,.2),inset 0 0 30px rgba(191,221,158,.12);--gc-ring:rgba(164,211,102,.25);
+ --gc-card-border:1px solid rgba(180,211,158,.18);--gc-shadow:0 16px 38px rgba(0,0,0,.19);--gc-button-text:#1b2a1c;--gc-button-bg:#a4d366;--gc-button-hover:#b8e27b;
+}
+html[data-theme="nature"] .feature-strip { gap:10px;border:0; }
+html[data-theme="nature"] .feature-tile { border:1px solid var(--theme-line);border-radius:24px 8px 24px 8px;background:rgba(40,65,46,.72); }
+html[data-theme="nature"] .hero-glyph span { filter:drop-shadow(0 9px 16px rgba(0,0,0,.35)); }
+
+/* 8 Classic — walnut library, brass details, traditional serif and framed blocks. */
+html[data-theme="classic"] {
+ --theme-bg:#17120e;--theme-panel:#241a13;--theme-card:#302216;--theme-line:rgba(205,163,105,.27);--theme-text:#f0dfc4;--theme-muted:#bca78b;--theme-accent:#d6ae76;
+ --gc-radius:8px;--gc-button-radius:5px;--gc-nav-radius:4px;--gc-mark-radius:5px;--gc-font:Georgia,serif;--gc-display:Georgia,serif;--gc-heading-weight:700;--gc-heading-spacing:-.025em;
+ --gc-page-bg:radial-gradient(ellipse at 87% 24%,rgba(178,100,42,.24),transparent 28%),linear-gradient(90deg,#17120e,#21170f 55%,#130e0a);
+ --gc-hero-bg:linear-gradient(90deg,rgba(23,17,12,.96),rgba(23,17,12,.25));--gc-hero-radius:8px;--gc-hero-padding:52px 34px;
+ --gc-art-radius:8px;--gc-art-bg:radial-gradient(circle at 65% 35%,#714321,#24190f 72%);--gc-art-shadow:inset 0 0 0 8px rgba(214,174,118,.05),0 18px 45px rgba(0,0,0,.4);--gc-ring:rgba(214,174,118,.22);
+ --gc-card-border:1px solid rgba(205,163,105,.27);--gc-shadow:0 18px 42px rgba(0,0,0,.35),inset 0 1px rgba(255,225,180,.05);--gc-button-text:#26190f;--gc-button-bg:#d6ae76;--gc-button-hover:#e5c18e;
+}
+html[data-theme="classic"] .feature-strip { gap:0;border-top:1px solid var(--theme-line); }
+html[data-theme="classic"] .feature-tile { border-right:1px solid var(--theme-line);background:transparent;border-radius:0; }
+html[data-theme="classic"] .hero-glyph span { filter:sepia(.65) grayscale(.35); }
+
+/* 9 Sakura — subdued dusk rose, muted plum surfaces, no white flash or harsh vignette. */
+html[data-theme="sakura"] {
+ color-scheme:dark;--theme-bg:#39232f;--theme-panel:rgba(62,39,51,.96);--theme-card:#503344;--theme-line:rgba(221,159,177,.22);--theme-text:#f2e5e9;--theme-muted:#c6aab5;--theme-accent:#d78ba2;
+ --gc-radius:18px;--gc-button-radius:999px;--gc-nav-radius:999px;--gc-mark-radius:50%;--gc-font:'DM Sans',sans-serif;--gc-display:Georgia,serif;--gc-heading-weight:700;--gc-heading-spacing:-.035em;
+ --gc-page-bg:radial-gradient(ellipse at 50% 42%,#654354 0%,#503445 35%,#3d2936 68%,#2c1c28 100%);
+ --gc-hero-bg:linear-gradient(110deg,rgba(47,29,40,.86),rgba(70,43,57,.62));--gc-hero-radius:24px;--gc-hero-padding:52px 34px;
+ --gc-art-radius:50% 50% 44% 56%;--gc-art-bg:radial-gradient(circle at 50% 35%,#9d667b,#503448 72%);--gc-art-shadow:0 16px 50px rgba(24,10,20,.28),inset 0 0 35px rgba(245,192,205,.1);--gc-ring:rgba(220,153,176,.22);
+ --gc-card-border:1px solid rgba(221,159,177,.2);--gc-shadow:0 16px 40px rgba(25,10,20,.24);--gc-button-text:#fff4f6;--gc-button-bg:#9e526d;--gc-button-hover:#b96b85;--gc-input-bg:#382632;
+}
+html[data-theme="sakura"] .topbar { background:rgba(49,31,42,.94)!important; }
+html[data-theme="sakura"] .feature-strip { gap:10px;border:0; }
+html[data-theme="sakura"] .feature-tile { border:1px solid var(--theme-line);border-radius:18px;background:rgba(81,51,67,.7); }
+html[data-theme="sakura"] .hero-glyph span { filter:sepia(.2) hue-rotate(290deg) saturate(.7); }
+
+/* 10 Dynamic — racing HUD, diagonal lanes, compact squared controls. */
+html[data-theme="dynamic"] {
+ --theme-bg:#061729;--theme-panel:#0a2138;--theme-card:#0d2c49;--theme-line:rgba(0,210,244,.3);--theme-text:#e9faff;--theme-muted:#a5c4d1;--theme-accent:#00d2f4;
+ --gc-radius:10px;--gc-button-radius:6px;--gc-nav-radius:5px;--gc-font:'DM Sans',sans-serif;--gc-heading-weight:900;--gc-heading-spacing:-.06em;
+ --gc-page-bg:repeating-linear-gradient(132deg,transparent 0 115px,rgba(0,192,255,.075) 116px 122px,transparent 123px 175px),radial-gradient(ellipse at 85% 28%,rgba(0,126,255,.3),transparent 32%),#061729;
+ --gc-hero-bg:linear-gradient(115deg,rgba(5,22,40,.94) 0 56%,rgba(0,126,205,.18) 56% 100%);--gc-hero-radius:10px;--gc-hero-padding:52px 30px;
+ --gc-art-radius:12px;--gc-art-bg:linear-gradient(140deg,#075080,#06192e);--gc-art-shadow:0 0 0 1px rgba(0,210,244,.28),0 22px 50px rgba(0,0,0,.32);--gc-ring:rgba(0,210,244,.3);
+ --gc-card-border:1px solid rgba(0,210,244,.27);--gc-shadow:0 16px 40px rgba(0,0,0,.28);--gc-button-text:#052033;--gc-button-bg:#00d2f4;--gc-button-hover:#51e5fa;
+}
+html[data-theme="dynamic"] .home-hero { overflow:hidden; }
+html[data-theme="dynamic"] .home-hero::after { content:"";position:absolute;z-index:-1;top:-25%;right:-8%;width:55%;height:150%;transform:skewX(-28deg);border-left:2px solid rgba(0,210,244,.16);border-right:16px solid rgba(0,143,220,.12);background:linear-gradient(90deg,transparent,rgba(0,145,230,.1)); }
+html[data-theme="dynamic"] .feature-strip { gap:10px;border:0; }
+html[data-theme="dynamic"] .feature-tile { border:1px solid var(--theme-line);border-radius:8px;background:rgba(7,34,57,.78); }
+
+@media(max-width:760px) {
+ html[data-theme="arcade"] .home-hero,html[data-theme="cozy"] .home-hero,html[data-theme="vivid"] .home-hero,html[data-theme="fantasy"] .home-hero,html[data-theme="cyberpunk"] .home-hero,html[data-theme="nature"] .home-hero,html[data-theme="classic"] .home-hero,html[data-theme="sakura"] .home-hero,html[data-theme="dynamic"] .home-hero { padding:28px 18px 34px; }
+}
