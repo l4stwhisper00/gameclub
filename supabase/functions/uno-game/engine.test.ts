@@ -60,6 +60,7 @@ Deno.test("a drawn playable card must be played or passed", () => {
     [{ id: "a1", color: "blue", kind: "number", value: 1 }],
     [{ id: "b1", color: "red", kind: "number", value: 5 }]
   );
+  state.drawPile = [{ id: "draw", color: "red", kind: "number", value: 8 }];
   const drawn = applyUnoAction(state, "a", { type: "draw" }, () => 0);
   assertEquals(drawn.pendingDrawnCardId, "draw");
   assertThrows(() => applyUnoAction(drawn, "a", { type: "play", cardId: "a1" }));
@@ -100,7 +101,10 @@ Deno.test("playing the final card finishes the game and records the winner", () 
 
 Deno.test("reverse changes turn direction for three players", () => {
   const state = stateWith(
-    [{ id: "reverse", color: "red", kind: "reverse", value: "reverse" }],
+    [
+      { id: "reverse", color: "red", kind: "reverse", value: "reverse" },
+      { id: "extra", color: "blue", kind: "number", value: 7 }
+    ],
     [{ id: "b1", color: "red", kind: "number", value: 5 }]
   );
   state.players.push("c");
