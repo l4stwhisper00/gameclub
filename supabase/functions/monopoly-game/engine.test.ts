@@ -53,3 +53,10 @@ Deno.test("rent is transferred to the owner after passing GO", () => {
   assertEquals(state.players[0].cash,1698);
   assertEquals(state.players[1].cash,1502);
 });
+
+Deno.test("only the host can end the game", () => {
+  const state = startMonopoly(["a","b"], "a");
+  assertThrows(() => applyMonopolyAction(state,"b",{type:"end_game"}));
+  const ended = applyMonopolyAction(state,"a",{type:"end_game"});
+  assertEquals(ended.status,"finished");
+});
