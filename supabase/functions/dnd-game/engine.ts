@@ -89,7 +89,9 @@ export function applyDndAction(source: DndState, playerId: string, action: DndAc
     if (!Number.isInteger(action.ac) || action.ac < 1 || action.ac > 40) throw new Error("КД должен быть от 1 до 40.");
     if (!Number.isInteger(action.initiativeBonus) || action.initiativeBonus < -5 || action.initiativeBonus > 20) throw new Error("Бонус инициативы должен быть от -5 до 20.");
     if (!Number.isInteger(action.speed) || action.speed < 0 || action.speed > 120) throw new Error("Скорость должна быть от 0 до 120.");
-    if (![6,8,10,12].includes(action.hitDie)) throw new Error("Неверный костьовой кубик класса.");
+    const expectedHitDie = HIT_DICE[className.toLowerCase()];
+    if (!expectedHitDie || expectedHitDie !== action.hitDie) throw new Error("Кость здоровья не соответствует классу.");
+    if (!Number.isInteger(action.conModifier) || action.conModifier < -5 || action.conModifier > 10) throw new Error("Модификатор Телосложения должен быть от -5 до 10.");
     const id = "char-" + playerId;
     state.characters[id] = {
       id, ownerId: playerId, name, ancestry, className, level: action.level, ac: action.ac,
@@ -129,6 +131,7 @@ export function applyDndAction(source: DndState, playerId: string, action: DndAc
     return state;
   }
   if (action.type === "rest") {
+    if (state.combatActive) throw new Error("Нельзя отдыхать во время боя.");
     const character = characterFor(state, playerId);
     if (action.kind === "long") {
       character.hp = character.maxHp;
@@ -171,8 +174,22 @@ export function applyDndAction(source: DndState, playerId: string, action: DndAc
   }
   if (action.type === "next_turn") {
     if (!isHost(state, playerId) || !state.combatActive) throw new Error("Перейти к следующему ходу может ведущий во время боя.");
-    state.currentTurnIndex += 1;
-    if (state.currentTurnIndex >= state.turnOrder.length) { state.currentTurnIndex = 0; state.round += 1; }
+    let nextIndex = -1;
+    for (let step = 1; step <= state.turnOrder.length; step++) {
+      const candidate = (state.currentTurnIndex + step) % state.turnOrder.length;
+      if (combatant(state, state.turnOrder[candidate]).hp > 0) {
+        nextIndex = candidate;
+        if (candidate <= state.currentTurnIndex) state.round += 1;
+        break;
+      }
+    }
+    if (nextIndex < 0) {
+      state.combatActive = false;
+      state.turnOrder = [];
+      addEvent(state, "combat", "Все участники боя выведены из строя. Бой завершён.", playerId);
+      return state;
+    }
+    state.currentTurnIndex = nextIndex;
     const nextId = state.turnOrder[state.currentTurnIndex];
     addEvent(state, "turn", "Ход: " + combatant(state, nextId).name + ".", playerId);
     return state;
