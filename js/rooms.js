@@ -879,6 +879,7 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
       else activeChessCleanup = cleanup;
     }
   }
+  if (renderSequence !== roomRenderSequence) return;
 
   let refreshQueued = false;
   const refreshRoom = () => {
