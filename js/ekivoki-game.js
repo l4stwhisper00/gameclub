@@ -1,7 +1,7 @@
 import {supabase} from "./supabase.js";
 function ensureEkivokiStyles(){if(document.getElementById("ekivoki-game-styles"))return;const link=document.createElement("link");link.id="ekivoki-game-styles";link.rel="stylesheet";link.href="./css/ekivoki-game.css";document.head.append(link);}
 function escapeHTML(value=""){return String(value).replace(/[&<>"']/g,(char)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));}
-async function invokeEkivoki(body){const {data,error}=await supabase.functions.invoke("ekivoki-game",{body});if(error){let message=error.message||"Не удалось связаться с Экивокиом.";try{const payload=await error.context?.json?.();if(payload?.error)message=payload.error;}catch{}const wrapped=new Error(message);wrapped.status=error.context?.status||0;throw wrapped;}return data;}
+async function invokeEkivoki(body){const {data,error}=await supabase.functions.invoke("ekivoki-game",{body});if(error){let message=error.message||"Не удалось связаться с Экивоки.";try{const payload=await error.context?.json?.();if(payload?.error)message=payload.error;}catch{}const wrapped=new Error(message);wrapped.status=error.context?.status||0;throw wrapped;}return data;}
 export async function startOnlineEkivokiGame(room){return invokeEkivoki({action:"start",room_id:room.id});}
 export function renderEkivokiGame(container,room,user){
  ensureEkivokiStyles();let state=null,privateState={},revision=-1,busy=false,disposed=false,channel=null,notice="Готовим карточки…";
