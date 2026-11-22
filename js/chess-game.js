@@ -217,7 +217,7 @@ export async function renderChessGame(container, room, user) {
         <p>${escapeHTML(result.subtitle)}</p>
         <div class="chess-result__actions">
           ${room.hostId === user.id ? '<button class="room-button room-button--primary" type="button" data-chess-replay>Сыграть ещё раз</button>' : '<p class="chess-result__hint">Новая партия доступна ведущему комнаты.</p>'}
-          <button class="room-button room-button--soft" type="button" data-chess-leave>Выйти из комнаты</button>
+          <button class="room-button room-button--soft" type="button" data-chess-leave>${room.hostId === user.id ? "К списку комнат" : "Покинуть комнату"}</button>
         </div>
       </div>`;
     existing?.replaceWith(panel);
@@ -257,12 +257,14 @@ export async function renderChessGame(container, room, user) {
       button.disabled = true;
       button.textContent = "Выходим…";
       try {
-        await leaveOnlineRoom(room.id);
+        // The room owner cannot leave their own room under the existing
+        // membership rules; they can return to the room directory instead.
+        if (room.hostId !== user.id) await leaveOnlineRoom(room.id);
         window.location.hash = "#/rooms";
       } catch (error) {
         noticeElement.textContent = error.message;
         button.disabled = false;
-        button.textContent = "Выйти из комнаты";
+        button.textContent = "Покинуть комнату";
       } finally {
         busy = false;
       }
