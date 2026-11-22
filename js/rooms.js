@@ -185,9 +185,11 @@ function roomCard(room, user) {
     </article>`;
 }
 
-async function renderList(container, user) {
+async function renderList(container, user, renderSequence = roomRenderSequence) {
   await ensurePublicProfile(user);
+  if (renderSequence !== roomRenderSequence) return;
   onlineRoomsCache = await listOnlineRooms();
+  if (renderSequence !== roomRenderSequence) return;
   const visibleRooms = onlineRoomsCache
     .filter((room) => room.visibility === "public" || getMember(room, user.id))
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -984,7 +986,7 @@ export function renderRooms(container, route = "/rooms") {
 
   const [path, query = ""] = route.split("?");
   if (path === "/rooms" || path === "/rooms/") {
-    renderList(container, user).catch((error) => { container.innerHTML = "<p>Не удалось загрузить комнаты: " + escapeHTML(error.message) + "</p>"; });
+    renderList(container, user, renderSequence).catch((error) => { if (renderSequence === roomRenderSequence) container.innerHTML = "<p>Не удалось загрузить комнаты: " + escapeHTML(error.message) + "</p>"; });
     return cleanup;
   }
   if (path === "/rooms/new") {
@@ -995,7 +997,7 @@ export function renderRooms(container, route = "/rooms") {
 
   const roomId = decodeURIComponent(path.slice("/rooms/".length));
   if (!roomId || roomId === "new") {
-    renderList(container, user);
+    renderList(container, user, renderSequence);
     return cleanup;
   }
   const params = new URLSearchParams(query);
