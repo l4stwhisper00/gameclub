@@ -26,11 +26,11 @@ function canBearOff(state:BackgammonState,color:BGColor,from:number,die:number){
  if(die>needed&&state.board.some((point,index)=>index<from&&point.owner==="black"&&point.count>0))return false;
  return true;
 }
-export function getLegalBackgammonMoves(state:BackgammonState):BGMove[]{
+function rawLegalMoves(state:BackgammonState):BGMove[]{
  if(state.phase!=="move"||state.status!=="active")return [];
  const color=state.currentPlayer,opponent=other(color),moves:BGMove[]=[];
  const sources=state.bar[color]>0?["bar"]:state.board.map((point,index)=>point.owner===color&&point.count>0?String(index):null).filter((value):value is string=>value!==null);
- for(const die of state.dice){
+ for(const die of new Set(state.dice)){
   for(const from of sources){
    let to:number;
    if(from==="bar")to=color==="white"?24-die:die-1;
@@ -45,6 +45,34 @@ export function getLegalBackgammonMoves(state:BackgammonState):BGMove[]{
   }
  }
  return moves;
+}
+function simulateMove(source:BackgammonState,move:BGMove):BackgammonState{
+ const state=structuredClone(source),color=state.currentPlayer,opponent=other(color);
+ if(move.from==="bar")state.bar[color]--;
+ else{const from=Number(move.from),point=state.board[from];point.count--;if(point.count===0)point.owner=null;}
+ if(move.to==="off")state.borneOff[color]++;
+ else{const to=Number(move.to),point=state.board[to];if(point.owner===opponent&&point.count===1){state.bar[opponent]++;point.owner=null;point.count=0;}if(point.count===0)point.owner=color;point.count++;}
+ const index=state.dice.indexOf(move.die);if(index>=0)state.dice.splice(index,1);
+ return state;
+}
+function maxPlayable(state:BackgammonState,memo:Map<string,number>):number{
+ if(!state.dice.length)return 0;
+ const key=JSON.stringify([state.board,state.bar,state.borneOff,state.dice,state.currentPlayer]);
+ const cached=memo.get(key);if(cached!==undefined)return cached;
+ const moves=rawLegalMoves(state);if(!moves.length){memo.set(key,0);return 0;}
+ let max=0;
+ for(const move of moves)max=Math.max(max,1+maxPlayable(simulateMove(state,move),memo));
+ memo.set(key,max);return max;
+}
+export function getLegalBackgammonMoves(state:BackgammonState):BGMove[]{
+ const raw=rawLegalMoves(state);if(!raw.length)return [];
+ const memo=new Map<string,number>(),max=maxPlayable(state,memo);
+ let legal=raw.filter((move)=>1+maxPlayable(simulateMove(state,move),memo)===max);
+ if(max===1&&state.dice.length>1){
+  const highest=Math.max(...state.dice),highMoves=legal.filter((move)=>move.die===highest);
+  if(highMoves.length)legal=highMoves;
+ }
+ return legal;
 }
 function finishTurn(state:BackgammonState){
  state.currentPlayer=other(state.currentPlayer);state.dice=[];state.phase="roll";
