@@ -81,7 +81,7 @@ function chooseBotMove(chess, difficulty) {
     let score = evaluate(next); // positive favours White; the bot plays Black.
     if (next.isCheckmate()) score = -100000;
     else if (next.isStalemate() || next.isDraw() || next.isThreefoldRepetition()) score = 0;
-    else if (next.isCheck()) score -= 35;
+    else if (next.inCheck()) score -= 35;
 
     // Small deterministic preference for promotion/captures, with noise to
     // avoid repeating the exact same choice in equivalent positions.
