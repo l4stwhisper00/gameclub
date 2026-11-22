@@ -188,7 +188,7 @@ Deno.serve(async (req) => {
         .eq("room_id", roomId)
         .maybeSingle();
       if (existingGameError) throw new HttpError(500, existingGameError.message);
-      if (existingGame?.state?.status === "active") {
+      if (existingGame?.state?.status === "active" && room.status !== "open") {
         throw new HttpError(409, "Партия уже идёт. Сначала заверши её и верни комнату в лобби.");
       }
       const opponentMode = body.opponent_mode === "bot" ? "bot" : "human";
