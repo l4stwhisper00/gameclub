@@ -3,6 +3,7 @@ import { storage, createId } from "./storage.js";
 import { GAMES, getGameById } from "./games.js";
 import { renderRoomChat, addRoomSystemMessage } from "./chat.js";
 import { renderGameRules } from "./game-rules.js";
+import { renderChessGame, startOnlineChessGame } from "./chess-game.js";
 import { ensurePublicProfile, listOnlineRooms, getOnlineRoom, createOnlineRoom, joinOnlineRoom, leaveOnlineRoom, setOnlineRoomStatus, removeOnlineRoomMember, deleteOnlineRoom } from "./online-rooms.js";
 let onlineRoomsCache = [];
 
@@ -380,14 +381,32 @@ function renderGameRuleFields(game) {
         </div>
       </div>`;
   }
-  if (game.id === "chess" || game.id === "backgammon") {
+  if (game.id === "chess") {
     return `
       <div class="room-form-grid">
         <div class="room-form-field">
           <label for="rule-time-control">КОНТРОЛЬ ВРЕМЕНИ</label>
           <select class="room-input" id="rule-time-control" name="timeControl"><option value="Без таймера">Без таймера</option><option value="3+2">3 + 2</option><option value="5+0">5 минут</option><option value="10+0">10 минут</option><option value="15+10">15 + 10</option></select>
         </div>
-        ${game.id === "backgammon" ? `<div class="room-form-field"><label for="rule-backgammon-mode">ВИД НАРД</label><select class="room-input" id="rule-backgammon-mode" name="backgammonMode"><option>Короткие</option><option>Длинные</option></select></div>` : ""}
+        <div class="room-form-field">
+          <label for="rule-chess-opponent">СОПЕРНИК</label>
+          <select class="room-input" id="rule-chess-opponent" name="opponentMode"><option value="human">Другой игрок</option><option value="bot">Компьютерный бот</option></select>
+        </div>
+      </div>
+      <div class="room-form-field">
+        <label for="rule-bot-difficulty">СЛОЖНОСТЬ БОТА</label>
+        <select class="room-input" id="rule-bot-difficulty" name="botDifficulty"><option value="easy">Лёгкая</option><option value="medium" selected>Средняя</option><option value="hard">Сложная</option></select>
+        <small class="room-field-hint">Настройка используется, если выбран компьютерный соперник.</small>
+      </div>`;
+  }
+  if (game.id === "backgammon") {
+    return `
+      <div class="room-form-grid">
+        <div class="room-form-field">
+          <label for="rule-time-control">КОНТРОЛЬ ВРЕМЕНИ</label>
+          <select class="room-input" id="rule-time-control" name="timeControl"><option value="Без таймера">Без таймера</option><option value="3+2">3 + 2</option><option value="5+0">5 минут</option><option value="10+0">10 минут</option><option value="15+10">15 + 10</option></select>
+        </div>
+        <div class="room-form-field"><label for="rule-backgammon-mode">ВИД НАРД</label><select class="room-input" id="rule-backgammon-mode" name="backgammonMode"><option>Короткие</option><option>Длинные</option></select></div>
       </div>`;
   }
   if (game.id === "codenames") {
@@ -597,7 +616,12 @@ function readGameRules(data, game) {
     case "spy":
       return { spyCount: Number(data.get("spyCount") || 1), spyTimer: Number(data.get("spyTimer") || 5) };
     case "chess":
-      return { timeControl: String(data.get("timeControl") || "Без таймера") };
+      return {
+        timeControl: String(data.get("timeControl") || "Без таймера"),
+        opponentMode: String(data.get("opponentMode") || "human") === "bot" ? "bot" : "human",
+        botDifficulty: ["easy", "medium", "hard"].includes(String(data.get("botDifficulty") || "medium"))
+          ? String(data.get("botDifficulty") || "medium") : "medium"
+      };
     case "backgammon":
       return {
         timeControl: String(data.get("timeControl") || "Без таймера"),
@@ -635,9 +659,15 @@ function readableRuleSettings(room) {
   } else if (game?.id === "spy") {
     rows.push(["Шпионов", String(gameRules.spyCount || 1)]);
     rows.push(["Время раунда", `${gameRules.spyTimer || 5} мин.`]);
-  } else if (game?.id === "chess" || game?.id === "backgammon") {
+  } else if (game?.id === "chess") {
     rows.push(["Контроль времени", gameRules.timeControl || "Без таймера"]);
-    if (gameRules.backgammonMode) rows.push(["Вид нард", gameRules.backgammonMode]);
+    rows.push(["Соперник", gameRules.opponentMode === "bot" ? "Компьютерный бот" : "Другой игрок"]);
+    if (gameRules.opponentMode === "bot") {
+      rows.push(["Сложность бота", ({ easy: "Лёгкая", medium: "Средняя", hard: "Сложная" })[gameRules.botDifficulty] || "Средняя"]);
+    }
+  } else if (game?.id === "backgammon") {
+    rows.push(["Контроль времени", gameRules.timeControl || "Без таймера"]);
+    rows.push(["Вид нард", gameRules.backgammonMode || "Короткие"]);
   } else if (game?.id === "codenames") {
     rows.push(["Капитаны", gameRules.captains === "host" ? "Назначает ведущий" : "Выбирают игроки"]);
   } else {
@@ -646,7 +676,10 @@ function readableRuleSettings(room) {
   return rows;
 }
 
-async function renderRoom(container, roomId, user, inviteCode = "") {
+let roomRenderSequence = 0;
+let activeChessCleanup = null;
+
+async function renderRoom(container, roomId, user, inviteCode = "", renderSequence = roomRenderSequence) {
   await ensurePublicProfile(user);
   let room = await getOnlineRoom(roomId);
   if (!room && inviteCode) {
@@ -714,6 +747,8 @@ async function renderRoom(container, roomId, user, inviteCode = "") {
   const isHost = room.hostId === user.id;
   const canJoin = !member && room.visibility === "public" && room.status === "open" && !full;
   const canLeave = member && !isHost;
+  const chessOpponentMode = room.rules?.game?.opponentMode === "bot" ? "bot" : "human";
+  const canStartChess = game.id === "chess" && (chessOpponentMode === "bot" ? members.length === 1 : members.length >= 2);
   const [tone, glow] = game.palette;
 
   container.innerHTML = `
@@ -740,6 +775,9 @@ async function renderRoom(container, roomId, user, inviteCode = "") {
 
       <div class="room-detail-grid">
         <div class="room-detail-main">
+          ${room.status === "playing" ? (game.id === "chess"
+            ? `<div id="room-game-mount"></div>`
+            : `<section class="room-panel room-game-coming"><span class="eyebrow">ИГРОВОЙ СТОЛ</span><h2>${escapeHTML(game.title)}</h2><p>Интерактивный интерфейс этой игры пока не подключён. Комната, участники и чат продолжают работать.</p></section>`) : ""}
           <section class="room-panel">
             <div class="room-panel__heading"><div><span class="eyebrow">КОМАНДА</span><h2>Участники</h2></div><span class="room-member-count">${members.length}/${room.maxPlayers}</span></div>
             <div class="room-members">
@@ -770,7 +808,7 @@ async function renderRoom(container, roomId, user, inviteCode = "") {
           <section class="room-panel room-host-panel">
             <span class="eyebrow">ВЕДУЩИЙ ВСТРЕЧИ</span>
             <div class="room-host-identity">${avatar(host, "room-avatar room-avatar--host")}<div><strong>${escapeHTML(host?.username || "Неизвестный игрок")}</strong><span>Создатель комнаты</span></div></div>
-            ${isHost ? `<div class="room-host-tools"><p>Ты управляешь этой комнатой.</p>${room.status === "open" ? `<button class="room-button room-button--primary room-button--full" type="button" id="room-start">Начать игру</button>` : ""}${room.status === "playing" ? `<button class="room-button room-button--primary room-button--full" type="button" id="room-finish-game">Завершить партию · вернуться в лобби</button>` : ""}${room.status !== "closed" ? `<button class="room-button room-button--soft room-button--full" type="button" id="room-close">Закрыть комнату</button>` : `<button class="room-button room-button--soft room-button--full" type="button" id="room-reopen">Вернуть в лобби</button>`}<button class="room-button room-button--danger room-button--full" type="button" id="room-delete">Удалить комнату</button></div>` : `<p class="room-detail-hint">Роль: ${member ? member.role === "host" ? "ведущий" : "игрок" : "гость"}. По вопросам встречи обратись к ведущему.</p>`}
+            ${isHost ? `<div class="room-host-tools"><p>Ты управляешь этой комнатой.</p>${room.status === "open" && game.id === "chess" ? `<button class="room-button room-button--primary room-button--full" type="button" id="room-start" ${canStartChess ? "" : "disabled"}>Начать шахматы</button>${canStartChess ? "" : `<p class="room-detail-hint">Для игры с человеком нужен второй участник. Чтобы играть одному, выбери бота в настройках комнаты.</p>`}` : ""}${room.status === "open" && game.id !== "chess" ? `<p class="room-detail-hint">Интерактивный стол для этой игры ещё в разработке. Комната, участники и чат уже доступны.</p>` : ""}${room.status === "playing" ? `<button class="room-button room-button--primary room-button--full" type="button" id="room-finish-game">Завершить партию · вернуться в лобби</button>` : ""}${room.status !== "closed" ? `<button class="room-button room-button--soft room-button--full" type="button" id="room-close">Закрыть комнату</button>` : `<button class="room-button room-button--soft room-button--full" type="button" id="room-reopen">Вернуть в лобби</button>`}<button class="room-button room-button--danger room-button--full" type="button" id="room-delete">Удалить комнату</button></div>` : `<p class="room-detail-hint">Роль: ${member ? member.role === "host" ? "ведущий" : "игрок" : "гость"}. По вопросам встречи обратись к ведущему.</p>`}
           </section>
           <section class="room-panel room-invite-panel">
             <span class="eyebrow">ПРИГЛАСИ ДРУЗЕЙ</span>
@@ -816,6 +854,14 @@ async function renderRoom(container, roomId, user, inviteCode = "") {
 
   const chatMount = container.querySelector("#room-chat-mount");
   if (chatMount) renderRoomChat(chatMount, room, user);
+  if (room.status === "playing" && game.id === "chess") {
+    const gameMount = container.querySelector("#room-game-mount");
+    if (gameMount) {
+      const cleanup = await renderChessGame(gameMount, room, user);
+      if (renderSequence !== roomRenderSequence) cleanup();
+      else activeChessCleanup = cleanup;
+    }
+  }
 
   container.querySelector("#room-join")?.addEventListener("click", async () => {
     try {
@@ -838,9 +884,9 @@ async function renderRoom(container, roomId, user, inviteCode = "") {
   container.querySelector("#room-start")?.addEventListener("click", async (event) => {
     const button = event.currentTarget;
     const started = await runRoomAction(button, async () => {
-      await setOnlineRoomStatus(room.id, "playing");
-      await renderRoom(container, room.id, user);
-    }, "Статус комнаты обновлён.");
+      await startOnlineChessGame(room);
+      await renderRoom(container, room.id, user, "", renderSequence);
+    }, "Шахматная партия создана.");
     if (!started && button.isConnected) button.focus();
   });
 
@@ -915,6 +961,9 @@ async function renderRoom(container, roomId, user, inviteCode = "") {
 }
 
 export async function renderRooms(container, route = "/rooms") {
+  const renderSequence = ++roomRenderSequence;
+  activeChessCleanup?.();
+  activeChessCleanup = null;
   ensureStyles();
   const user = getCurrentUser();
   if (!user) {
@@ -939,5 +988,10 @@ export async function renderRooms(container, route = "/rooms") {
     return;
   }
   const params = new URLSearchParams(query);
-  renderRoom(container, roomId, user, params.get("invite") || "").catch((error) => { container.innerHTML = "<p>Не удалось открыть комнату: " + escapeHTML(error.message) + "</p>"; });
+  renderRoom(container, roomId, user, params.get("invite") || "", renderSequence).catch((error) => { container.innerHTML = "<p>Не удалось открыть комнату: " + escapeHTML(error.message) + "</p>"; });
+  return () => {
+    if (renderSequence === roomRenderSequence) roomRenderSequence += 1;
+    activeChessCleanup?.();
+    activeChessCleanup = null;
+  };
 }
