@@ -3,6 +3,15 @@ import { supabase } from "./supabase.js";
 const COLORS = ["red", "blue", "green", "yellow"];
 const COLOR_LABELS = { red: "Красный", blue: "Синий", green: "Зелёный", yellow: "Жёлтый" };
 
+function ensureUnoStyles() {
+  if (document.getElementById("uno-game-styles")) return;
+  const link = document.createElement("link");
+  link.id = "uno-game-styles";
+  link.rel = "stylesheet";
+  link.href = "./css/uno-game.css";
+  document.head.append(link);
+}
+
 function escapeHTML(value = "") {
   return String(value).replace(/[&<>"']/g, (char) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
@@ -43,6 +52,7 @@ export async function startOnlineUnoGame(room) {
 }
 
 export function renderUnoGame(container, room, user) {
+  ensureUnoStyles();
   let state = null;
   let hand = [];
   let revision = -1;
@@ -62,6 +72,7 @@ export function renderUnoGame(container, room, user) {
     const currentPlayerId = state.currentPlayerId;
     const isTurn = currentPlayerId === user.id && state.status === "active";
     const currentPlayer = players.find((player) => player.id === currentPlayerId);
+    const currentPlayerName = (room.members || []).find((entry) => entry.userId === currentPlayerId)?.user?.username || "соперник";
     const topCard = state.topCard;
     const penalty = state.unoPenaltyPlayerId;
     const canCatch = isTurn && penalty && penalty !== user.id;
@@ -90,7 +101,7 @@ export function renderUnoGame(container, room, user) {
     const isFinished = state.status === "finished";
     const status = isFinished
       ? `Победитель: ${state.winnerId === user.id ? "ты!" : escapeHTML(players.find((p) => p.id === state.winnerId)?.username || "соперник")}`
-      : isTurn ? "Твой ход" : `Ходит ${escapeHTML(currentPlayer?.username || "соперник")}`;
+      : isTurn ? "Твой ход" : `Ходит ${escapeHTML(currentPlayerName)}`;
     const colorLabel = COLOR_LABELS[state.currentColor] || state.currentColor;
     container.innerHTML = `
       <section class="uno-game" aria-label="Игровой стол Уно">
