@@ -23,7 +23,9 @@ function outcomeFor(chess) {
   if (chess.isCheckmate()) {
     return { status: "checkmate", winner: chess.turn() === "w" ? "black" : "white" };
   }
-  if (chess.isDraw()) return { status: "draw", winner: null };
+  if (chess.isStalemate() || chess.isDraw() || chess.isThreefoldRepetition()) {
+    return { status: "draw", winner: null };
+  }
   return null;
 }
 
@@ -61,7 +63,7 @@ function evaluate(chess) {
 
 function search(chess, depth, alpha, beta) {
   if (chess.isCheckmate()) return chess.turn() === "w" ? -100000 - depth : 100000 + depth;
-  if (chess.isDraw()) return 0;
+  if (chess.isStalemate() || chess.isDraw() || chess.isThreefoldRepetition()) return 0;
   if (depth <= 0) return evaluate(chess);
 
   const moves = chess.moves({ verbose: true });
@@ -256,7 +258,9 @@ Deno.serve(async (req) => {
       }
       const state = gameRow.state;
       if (state.status !== "active") throw new HttpError(409, "Партия уже завершена.");
-      const chess = new Chess(state.fen);
+      const chess = new Chess();
+      if (state.pgn) chess.loadPgn(state.pgn);
+      else chess.load(state.fen);
       const movingColor = chess.turn();
       if (state.opponentMode === "bot") {
         if (movingColor !== "w" || state.whiteUserId !== user.id) {
