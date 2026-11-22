@@ -125,6 +125,7 @@ function mountThemePicker() {
   });
   let saved = "classic";
   try { saved = localStorage.getItem(STORAGE_KEY) || "classic"; } catch { /* Keep the default. */ }
+  if (!THEMES.some(theme => theme.id === saved)) saved = "classic";
   setTheme(saved, false);
   addSakura();
 }
