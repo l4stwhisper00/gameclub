@@ -1,0 +1,26 @@
+name: Mafia engine tests
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/mafia-game/**"
+      - ".github/workflows/mafia-engine-tests.yml"
+  push:
+    branches:
+      - supabase-integration
+    paths:
+      - "supabase/functions/mafia-game/**"
+      - ".github/workflows/mafia-engine-tests.yml"
+
+jobs:
+  mafia-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check Edge Function
+        run: deno check supabase/functions/mafia-game/index.ts
+      - name: Run Mafia rules tests
+        run: deno test supabase/functions/mafia-game/engine.test.ts
