@@ -665,8 +665,10 @@ function readableRuleSettings(room) {
     rows.push(["Время раунда", `${gameRules.spyTimer || 5} мин.`]);
   } else if (game?.id === "chess") {
     rows.push(["Контроль времени", gameRules.timeControl || "Без таймера"]);
-    rows.push(["Соперник", gameRules.opponentMode === "bot" ? "Компьютерный бот" : "Другой игрок"]);
-    if (gameRules.opponentMode === "bot") {
+    const legacySoloBot = !gameRules.opponentMode && (room.members || []).length === 1;
+    const opponentMode = gameRules.opponentMode || (legacySoloBot ? "bot" : "human");
+    rows.push(["Соперник", opponentMode === "bot" ? "Компьютерный бот" : "Другой игрок"]);
+    if (opponentMode === "bot") {
       rows.push(["Сложность бота", ({ easy: "Лёгкая", medium: "Средняя", hard: "Сложная" })[gameRules.botDifficulty] || "Средняя"]);
     }
   } else if (game?.id === "backgammon") {
@@ -764,7 +766,8 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
   const isHost = room.hostId === user.id;
   const canJoin = !member && room.visibility === "public" && room.status === "open" && !full;
   const canLeave = member && !isHost;
-  const chessOpponentMode = room.rules?.game?.opponentMode === "bot" ? "bot" : "human";
+  const chessOpponentMode = room.rules?.game?.opponentMode === "bot"
+    || (!room.rules?.game?.opponentMode && members.length === 1) ? "bot" : "human";
   const canStartChess = game.id === "chess" && (chessOpponentMode === "bot" ? members.length === 1 : members.length >= 2);
   const [tone, glow] = game.palette;
 
