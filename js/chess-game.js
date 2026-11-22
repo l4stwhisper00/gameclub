@@ -112,7 +112,7 @@ export async function renderChessGame(container, room, user) {
       return "Ничья.";
     }
     if (gameState?.status === "finished") return "Партия завершена.";
-    if (chess.isCheck()) return gameState.turn === "w" ? "Шах белому королю!" : "Шах чёрному королю!";
+    if (chess.inCheck()) return gameState.turn === "w" ? "Шах белому королю!" : "Шах чёрному королю!";
     if (canMove(chess)) return gameState.turn === "w" ? "Твой ход — белые." : "Твой ход — чёрные.";
     return gameState.turn === "w" ? "Ход белых…" : "Ход чёрных…";
   }
