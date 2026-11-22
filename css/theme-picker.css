@@ -186,3 +186,9 @@ html[data-theme="dynamic"] .topbar { box-shadow:0 1px 0 rgba(0,210,244,.16); }
 html[data-theme="fantasy"] .home-hero::after { background:radial-gradient(ellipse at 85% 45%,rgba(187,117,62,.2),transparent 60%); }
 html[data-theme="classic"] .home-hero::after { background:radial-gradient(ellipse at 85% 50%,rgba(173,104,48,.23),transparent 55%); }
 html[data-theme="minimal"] .home-hero::after { background:linear-gradient(135deg,transparent,rgba(170,196,160,.06)); }
+
+@media(max-width:390px) {
+  .theme-picker-trigger { min-width:66px;padding-inline:8px;justify-content:center; }
+  .theme-picker-trigger>span:nth-child(2) { width:34px;max-width:34px;font-size:0; }
+  .theme-picker-trigger>span:nth-child(2)::after { content:"Тема";font-size:9px; }
+}
