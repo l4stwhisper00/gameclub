@@ -18,7 +18,7 @@ Deno.test("correct guesses award points to the actor team",()=>{
 Deno.test("wrong guesses do not score and actor can skip",()=>{
  let state=startCrocodile(["a","b","c","d"],"a",()=>0.2);
  const actor=state.currentActorId;
- const guesser=state.players.find((id)=>id!==actor)!;
+ const guesser=state.players.find((id)=>id!==actor&&state.teams[id]===state.teams[actor])!;
  state=applyCrocodileAction(state,guesser,{type:"guess",guess:"не то"});
  assertEquals(state.scores.red,0);
  state=applyCrocodileAction(state,actor,{type:"skip"});
