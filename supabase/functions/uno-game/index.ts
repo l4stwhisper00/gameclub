@@ -34,7 +34,7 @@ function asSession(data: unknown): { game_id: string; public_state: Record<strin
   return row as { game_id: string; public_state: Record<string, unknown>; secret_state: UnoState; revision: number };
 }
 
-async function loadSession(admin: ReturnType<typeof createClient>, roomId: string) {
+async function loadSession(admin: any, roomId: string) {
   const { data, error } = await admin.rpc("club_load_game_session", { p_room_id: roomId });
   if (error) throw new HttpError(500, "Не удалось загрузить состояние партии.");
   return asSession(data);
@@ -86,7 +86,7 @@ Deno.serve(async (req: Request) => {
     if (authError || !authData?.user) throw new HttpError(401, "Сессия истекла. Войди снова.");
     const user = authData.user;
 
-    const admin = createClient(url, serviceRoleKey, {
+    const admin: any = createClient(url, serviceRoleKey, {
       auth: { persistSession: false, autoRefreshToken: false }
     });
     const body = await req.json().catch(() => ({}));
