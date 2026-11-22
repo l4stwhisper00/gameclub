@@ -312,8 +312,9 @@
 .chess-promotion-dialog__cancel { margin-top:12px; padding:7px 10px; border:0; color:#a9a4ba; background:transparent; cursor:pointer; font-size:9px; }
 
 
-/* Keep chess opponent and bot difficulty grouped in the same settings column. */
-.room-chess-opponent { align-content:start; }
+/* Give chess opponent settings enough horizontal room for the full bot label. */
+.room-chess-opponent { grid-column:1 / -1; align-content:start; }
+.room-chess-opponent > .room-input { max-width:100%; }
 .room-chess-opponent__difficulty { display:grid; gap:8px; margin-top:5px; }
 .room-chess-opponent__difficulty > label { color:#c7c3d8; font-size:9px; font-weight:800; letter-spacing:1px; }
 .room-chess-opponent__difficulty .room-field-hint { margin-top:0; }
