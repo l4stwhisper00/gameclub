@@ -321,3 +321,24 @@
 @media (max-width:560px) {
   .room-chess-opponent__difficulty { margin-top:2px; }
 }
+
+
+/* Decorative artwork and chess controls are not text-selection targets. */
+.room-detail-hero__game,
+.room-detail-hero__icon,
+.room-detail-hero__glow,
+.rooms-hero__dice,
+.room-panel__icon,
+.room-visibility-icon,
+.rooms-empty__icon,
+.chess-board,
+.chess-square,
+.chess-square *,
+.chess-game__live,
+.chess-promotion-dialog__choices,
+.chess-promotion-dialog__choices *,
+.room-button {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}

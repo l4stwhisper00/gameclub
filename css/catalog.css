@@ -183,3 +183,12 @@ body.has-game-modal { overflow:hidden; }
   .game-card,.game-card * { transition-duration:.01ms !important; }
   .game-card { transform:none !important; }
 }
+
+
+/* Game artwork is decorative; keep the title and description selectable. */
+.game-card__emoji,
+.game-modal__emoji {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
