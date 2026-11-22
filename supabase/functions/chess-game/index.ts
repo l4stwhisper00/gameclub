@@ -61,33 +61,10 @@ function evaluate(chess) {
   return score;
 }
 
-function search(chess, depth, alpha, beta) {
-  if (chess.isCheckmate()) return chess.turn() === "w" ? -100000 - depth : 100000 + depth;
-  if (chess.isStalemate() || chess.isDraw() || chess.isThreefoldRepetition()) return 0;
-  if (depth <= 0) return evaluate(chess);
-
-  const moves = chess.moves({ verbose: true });
-  const maximizing = chess.turn() === "w";
-  let best = maximizing ? -Infinity : Infinity;
-  for (const move of moves) {
-    const next = new Chess(chess.fen());
-    next.move({ from: move.from, to: move.to, promotion: move.promotion || "q" });
-    const score = search(next, depth - 1, alpha, beta);
-    if (maximizing) {
-      best = Math.max(best, score);
-      alpha = Math.max(alpha, best);
-    } else {
-      best = Math.min(best, score);
-      beta = Math.min(beta, best);
-    }
-    if (beta <= alpha) break;
-  }
-  return best;
-}
-
 function chooseBotMove(chess, difficulty) {
   const moves = chess.moves({ verbose: true });
   if (!moves.length) return null;
+
   if (difficulty === "easy") {
     const captures = moves.filter((move) => move.captured);
     const pool = captures.length && Math.random() < 0.35 ? captures : moves;
@@ -95,29 +72,32 @@ function chooseBotMove(chess, difficulty) {
     return { from: move.from, to: move.to, promotion: move.promotion || "q" };
   }
 
-  // Root alpha-beta pruning keeps the bot responsive on slower devices.
-  const depth = difficulty === "hard" ? 2 : 1;
-  const ordered = [...moves].sort((a, b) =>
-    Number(Boolean(b.captured)) - Number(Boolean(a.captured))
-    || Number(Boolean(b.promotion)) - Number(Boolean(a.promotion))
-  );
-  let bestScore = Infinity;
-  let rootBeta = Infinity;
-  let bestMoves = [];
-  for (const move of ordered) {
+  // Score only the resulting position. Searching every opponent reply caused
+  // CPU-limit failures in the Edge Function and made otherwise valid moves fail.
+  const scored = moves.map((move) => {
     const next = new Chess(chess.fen());
     next.move({ from: move.from, to: move.to, promotion: move.promotion || "q" });
-    const score = search(next, depth, -Infinity, rootBeta);
-    if (score < bestScore) {
-      bestScore = score;
-      rootBeta = score;
-      bestMoves = [move];
-    } else if (score === bestScore) {
-      bestMoves.push(move);
-    }
-  }
-  const chosen = bestMoves[Math.floor(Math.random() * bestMoves.length)];
-  return { from: chosen.from, to: chosen.to, promotion: chosen.promotion || "q" };
+
+    let score = evaluate(next); // positive favours White; the bot plays Black.
+    if (next.isCheckmate()) score = -100000;
+    else if (next.isStalemate() || next.isDraw() || next.isThreefoldRepetition()) score = 0;
+    else if (next.isCheck()) score -= 35;
+
+    // Small deterministic preference for promotion/captures, with noise to
+    // avoid repeating the exact same choice in equivalent positions.
+    if (move.promotion) score -= 850;
+    score += (Math.random() - 0.5) * (difficulty === "hard" ? 0.5 : 8);
+    return { move, score };
+  }).sort((a, b) => a.score - b.score);
+
+  const choice = difficulty === "hard"
+    ? scored[0]
+    : scored[Math.floor(Math.random() * Math.min(4, scored.length))];
+  return {
+    from: choice.move.from,
+    to: choice.move.to,
+    promotion: choice.move.promotion || "q"
+  };
 }
 
 async function saveState(admin, roomId, state, expectedRevision, userId) {
@@ -171,20 +151,21 @@ Deno.serve(async (req) => {
     const action = String(body.action || "");
     if (!roomId) throw new HttpError(400, "Не указана комната.");
 
-    const { data: room, error: roomError } = await admin
-      .from("club_rooms")
-      .select("id,game_id,host_id,status")
-      .eq("id", roomId)
-      .maybeSingle();
+    const [roomResult, membershipResult] = await Promise.all([
+      admin.from("club_rooms")
+        .select("id,game_id,host_id,status")
+        .eq("id", roomId)
+        .maybeSingle(),
+      admin.from("club_room_members")
+        .select("user_id,role")
+        .eq("room_id", roomId)
+        .eq("user_id", user.id)
+        .maybeSingle()
+    ]);
+    const { data: room, error: roomError } = roomResult;
+    const { data: membership, error: membershipError } = membershipResult;
     if (roomError) throw new HttpError(500, roomError.message);
     if (!room || room.game_id !== "chess") throw new HttpError(404, "Шахматная комната не найдена.");
-
-    const { data: membership, error: membershipError } = await admin
-      .from("club_room_members")
-      .select("user_id,role")
-      .eq("room_id", roomId)
-      .eq("user_id", user.id)
-      .maybeSingle();
     if (membershipError) throw new HttpError(500, membershipError.message);
     if (!membership) throw new HttpError(403, "Только участники комнаты могут играть.");
 
