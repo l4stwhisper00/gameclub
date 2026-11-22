@@ -246,6 +246,7 @@ Deno.serve(async (req) => {
         throw new HttpError(409, "Доска уже обновилась. Повтори ход.");
       }
       const state = gameRow.state;
+      if (state.status !== "active") throw new HttpError(409, "Партия уже завершена.");
       const chess = new Chess(state.fen);
       const movingColor = chess.turn();
       if (state.opponentMode === "bot") {
