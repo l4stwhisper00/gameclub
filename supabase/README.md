@@ -26,3 +26,14 @@ Do not add a secret/service-role key to the website. The browser uses only the p
 - The participant strip currently represents room members; it is not a precise online-presence indicator.
 - Actual game state and hidden information (especially Mafia roles) are not migrated. Do not treat Mafia or other hidden-role games as securely playable online until server-authorized game-state operations are implemented.
 - Browser verification with two separate accounts is still required before merging this PR into `main`.
+
+
+## Interactive chess
+
+- `supabase/chess-game-state.sql` creates the member-readable `club_room_game_states` table and enables its Realtime feed. This migration has already been applied to the connected project.
+- `supabase/functions/chess-game/index.ts` is the authenticated server endpoint. It validates legal moves with chess.js, checks player turns and revision numbers, and calculates the solo bot's reply.
+- The `chess-game` Edge Function is deployed with JWT verification enabled. Do not place the service-role key in browser code; the function reads its server-side environment variable.
+- Chess rooms can be configured for human-vs-human or solo-vs-bot. The bot offers easy, medium and hard levels.
+- The existing solo chess room can be recovered from its game panel: the host can initialize a new chess position as a bot game.
+- The first browser smoke test should confirm: host starts a bot game, selects a piece, sees legal destinations, completes a move, receives a bot reply, reloads the room and sees the same position.
+- Human-vs-human verification should use two separate signed-in accounts and confirm that only the player whose turn it is can move.
