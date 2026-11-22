@@ -6,7 +6,7 @@ export interface SHState{
  presidentIndex:number;chancellorId:string|null;previousChancellorId:string|null;phase:SHPhase;
  votes:Record<string,boolean>;policyDeck:SHPolicy[];discardPile:SHPolicy[];presidentHand:SHPolicy[];chancellorHand:SHPolicy[];
  liberalPolicies:number;fascistPolicies:number;electionTracker:number;winner:"liberal"|"fascist"|null;
- pendingPower:"investigate"|"execute"|null;investigationResults:Record<string,"liberal"|"fascist">;
+ pendingPower:"investigate"|"execute"|null;investigationResults:Record<string,{targetId:string;result:"liberal"|"fascist"}>;
  lastEvent:string;lastElection:"approved"|"rejected"|null;
 }
 export type SHAction=
@@ -18,10 +18,10 @@ export type SHAction=
  |{type:"execute";targetId:string}
  |{type:"end_game"};
 function shuffle<T>(items:T[],random:()=>number):T[]{const a=[...items];for(let i=a.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function president(state:SHState){return state.players[state.presidentIndex];}
-function activePlayers(state:SHState){return state.players.filter((id)=>state.roles[id]!=="dead" as never);}
+function activePlayers(state:SHState){return state.players.filter((id)=>state.roles[id]!=="dead");}
+function president(state:SHState){let index=state.presidentIndex;for(let i=0;i<state.players.length;i++){const id=state.players[index];if(state.roles[id]!=="dead")return id;index=(index+1)%state.players.length;}return state.players[state.presidentIndex];}
 function roleIsFascist(role:SHRole){return role==="fascist"||role==="hitler";}
-function nextPresident(state:SHState){state.presidentIndex=(state.presidentIndex+1)%state.players.length;state.chancellorId=null;state.votes={};state.presidentHand=[];state.chancellorHand=[];state.pendingPower=null;state.phase="nominate";}
+function nextPresident(state:SHState){let index=state.presidentIndex;for(let i=0;i<state.players.length;i++){index=(index+1)%state.players.length;if(state.roles[state.players[index]]!=="dead")break;}state.presidentIndex=index;state.chancellorId=null;state.votes={};state.presidentHand=[];state.chancellorHand=[];state.pendingPower=null;state.phase="nominate";}
 function powerFor(n:number,count:number):"investigate"|"execute"|null{
  if(n<=6)return count===3||count===4?"investigate":count===5?"execute":null;
  if(n<=8)return count===2||count===3?"investigate":count>=4&&count<=5?"execute":null;
@@ -52,17 +52,18 @@ export function startSecretHitler(playerIds:string[],hostId:string,random:()=>nu
 }
 export function applySecretHitlerAction(source:SHState,playerId:string,action:SHAction,random:()=>number=Math.random):SHState{
  const state=structuredClone(source);if(state.status!=="active")throw new Error("Партия завершена.");if(!state.players.includes(playerId))throw new Error("Ты не участник партии.");
+ if(!activePlayers(state).includes(playerId)&&action.type!=="end_game")throw new Error("Ты выбыл из партии.");
  if(action.type==="end_game"){if(playerId!==state.hostId)throw new Error("Завершить партию может только ведущий.");state.status="finished";state.phase="finished";state.winner=null;state.lastEvent="Ведущий завершил партию.";return state;}
  if(action.type==="nominate"){
   if(state.phase!=="nominate"||playerId!==president(state))throw new Error("Кандидата выдвигает президент.");
-  if(action.targetId===playerId||!state.players.includes(action.targetId)||action.targetId===state.previousChancellorId)throw new Error("Этот кандидат сейчас не может стать канцлером.");
+  if(action.targetId===playerId||!activePlayers(state).includes(action.targetId)||action.targetId===state.previousChancellorId)throw new Error("Этот кандидат сейчас не может стать канцлером.");
   state.chancellorId=action.targetId;state.votes={};state.phase="election";state.lastEvent="Президент выдвинул канцлера. Все голосуют.";return state;
  }
  if(action.type==="vote"){
   if(state.phase!=="election"||playerId in state.votes)throw new Error("Сейчас нельзя голосовать или голос уже подан.");
   state.votes[playerId]=Boolean(action.approve);
-  if(Object.keys(state.votes).length===state.players.length){
-   const yes=Object.values(state.votes).filter(Boolean).length>state.players.length/2;
+  if(activePlayers(state).every((id)=>id in state.votes)){
+   const yes=Object.values(state.votes).filter(Boolean).length>activePlayers(state).length/2;
    if(yes){
     state.lastElection="approved";
     if(state.roles[state.chancellorId!]==="hitler"&&state.fascistPolicies>=3){state.status="finished";state.phase="finished";state.winner="fascist";state.lastEvent="Гитлер избран канцлером после трёх фашистских законов. Побеждает фашизм.";return state;}
@@ -88,8 +89,8 @@ export function applySecretHitlerAction(source:SHState,playerId:string,action:SH
  }
  if(action.type==="investigate"){
   if(state.phase!=="investigate"||playerId!==president(state))throw new Error("Расследование проводит президент.");
-  if(!state.players.includes(action.targetId)||action.targetId===playerId)throw new Error("Выбери другого участника.");
-  state.investigationResults[playerId+":"+action.targetId]=roleIsFascist(state.roles[action.targetId])?"fascist":"liberal";
+  if(!activePlayers(state).includes(action.targetId)||action.targetId===playerId)throw new Error("Выбери другого участника.");
+  state.investigationResults[playerId]={targetId:action.targetId,result:roleIsFascist(state.roles[action.targetId])?"fascist":"liberal"};
   state.lastEvent="Президент завершил расследование.";
   nextPresident(state);return state;
  }
@@ -102,7 +103,7 @@ export function applySecretHitlerAction(source:SHState,playerId:string,action:SH
  throw new Error("Неизвестное действие.");
 }
 export function getSecretHitlerPublicState(state:SHState){
- return {gameId:state.gameId,status:state.status,hostId:state.hostId,players:state.players.filter((id)=>state.roles[id]!=="dead").map((id)=>({id})),phase:state.phase,presidentId:president(state),chancellorId:state.chancellorId,liberalPolicies:state.liberalPolicies,fascistPolicies:state.fascistPolicies,electionTracker:state.electionTracker,votesCount:Object.keys(state.votes).length,missionVotesCount:state.chancellorHand.length,lastElection:state.lastElection,winner:state.winner,lastEvent:state.lastEvent,...(state.status==="finished"?{revealedRoles:state.roles}: {})};
+ return {gameId:state.gameId,status:state.status,hostId:state.hostId,players:activePlayers(state).map((id)=>({id})),phase:state.phase,presidentId:president(state),chancellorId:state.chancellorId,liberalPolicies:state.liberalPolicies,fascistPolicies:state.fascistPolicies,electionTracker:state.electionTracker,votesCount:Object.keys(state.votes).length,lastElection:state.lastElection,winner:state.winner,lastEvent:state.lastEvent,...(state.status==="finished"?{revealedRoles:state.roles}: {})};
 }
 export function getSecretHitlerPrivateState(state:SHState,playerId:string){
  if(!state.players.includes(playerId))throw new Error("Ты не участник партии.");
@@ -111,5 +112,5 @@ export function getSecretHitlerPrivateState(state:SHState,playerId:string){
  return {role,team:role==="liberal"?"liberal":"fascist",allies,knowsHitler,
  presidentPolicies:state.phase==="president_discard"&&president(state)===playerId?state.presidentHand:[],
  chancellorPolicies:state.phase==="chancellor_enact"&&state.chancellorId===playerId?state.chancellorHand:[],
- investigation:state.investigationResults[president(state)+":"+playerId]||null};
+ investigation:state.investigationResults[playerId]||null,isAlive:role!=="dead"};
 }
