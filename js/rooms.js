@@ -392,15 +392,15 @@ function renderGameRuleFields(game) {
           <select class="room-input" id="rule-time-control" name="timeControl"><option value="Без таймера">Без таймера</option></select>
           <small class="room-field-hint">Игровые часы добавим отдельным обновлением; сейчас партия идёт без таймера.</small>
         </div>
-        <div class="room-form-field">
+        <div class="room-form-field room-chess-opponent">
           <label for="rule-chess-opponent">СОПЕРНИК</label>
           <select class="room-input" id="rule-chess-opponent" name="opponentMode"><option value="human">Другой игрок</option><option value="bot">Компьютерный бот</option></select>
+          <div class="room-chess-opponent__difficulty">
+            <label for="rule-bot-difficulty">СЛОЖНОСТЬ БОТА</label>
+            <select class="room-input" id="rule-bot-difficulty" name="botDifficulty"><option value="easy">Лёгкая</option><option value="medium" selected>Средняя</option><option value="hard">Сложная</option></select>
+            <small class="room-field-hint">Настройка используется, если выбран компьютерный соперник.</small>
+          </div>
         </div>
-      </div>
-      <div class="room-form-field">
-        <label for="rule-bot-difficulty">СЛОЖНОСТЬ БОТА</label>
-        <select class="room-input" id="rule-bot-difficulty" name="botDifficulty"><option value="easy">Лёгкая</option><option value="medium" selected>Средняя</option><option value="hard">Сложная</option></select>
-        <small class="room-field-hint">Настройка используется, если выбран компьютерный соперник.</small>
       </div>`;
   }
   if (game.id === "backgammon") {
