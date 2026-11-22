@@ -130,7 +130,9 @@ export async function sendOnlineMessage(roomId, userId, text) {
 }
 
 export function subscribeOnlineRoom(roomId, onChange) {
-  const channel = supabase.channel(`club-room-${roomId}`)
+  // A room refresh can overlap the previous chat cleanup. Give each live
+  // subscription its own topic so a late cleanup can never reuse a joined channel.
+  const channel = supabase.channel(`club-room-${roomId}-${crypto.randomUUID()}`)
     .on("postgres_changes", { event: "*", schema: "public", table: "club_rooms", filter: `id=eq.${roomId}` }, onChange)
     .on("postgres_changes", { event: "*", schema: "public", table: "club_room_members", filter: `room_id=eq.${roomId}` }, onChange)
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "club_room_messages", filter: `room_id=eq.${roomId}` }, onChange)
