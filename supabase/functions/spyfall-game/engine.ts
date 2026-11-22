@@ -95,7 +95,8 @@ export function getSpyfallPublicState(state:SpyfallState){
     gameId:state.gameId,status:state.status,hostId:state.hostId,
     players:state.players.map((id)=>({id})),category:state.location.category,
     turnOrder:state.turnOrder,currentAskerId:state.currentAskerId,
-    questions:state.questions,winner:state.winner,lastEvent:state.lastEvent
+    questions:state.questions,winner:state.winner,lastEvent:state.lastEvent,
+    ...(state.status==="finished"?{revealedLocation:state.location.name,spyId:state.spyId}: {})
   };
 }
 export function getSpyfallPrivateState(state:SpyfallState,playerId:string){
