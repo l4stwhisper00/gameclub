@@ -471,7 +471,7 @@ function renderRoute() {
       location.hash = `#/login?next=${encodeURIComponent(route)}`;
       return;
     }
-    renderRooms(app, route);
+    routeCleanup = renderRooms(app, route);
     return;
   }
   if (routePath.startsWith("/u/")) return renderPublicProfile(routePath.slice(3));
