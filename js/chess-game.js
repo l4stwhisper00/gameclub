@@ -82,6 +82,7 @@ export async function renderChessGame(container, room, user) {
   let disposed = false;
   // Keep the finished result visible across transient realtime refreshes.
   let finishedResultRevision = null;
+  let finishedGameStartedAt = null;
 
   function getChess() {
     const chess = new Chess();
@@ -204,13 +205,18 @@ export async function renderChessGame(container, room, user) {
     if (gameState?.status !== "finished") {
       // A stale/intermediate active snapshot must not dismiss the result screen.
       // A genuinely newer revision (host started a replay) clears the latch.
-      if (finishedResultRevision !== null && revision > finishedResultRevision) {
+      // A replay creates a new startedAt value. Stale active snapshots from
+      // the previous game keep the result visible; only a genuinely new game
+      // clears it for every participant.
+      if (finishedGameStartedAt && gameState?.startedAt && gameState.startedAt !== finishedGameStartedAt) {
         finishedResultRevision = null;
+        finishedGameStartedAt = null;
         existing?.remove();
       }
       return;
     }
     finishedResultRevision = Math.max(finishedResultRevision ?? -1, revision);
+    finishedGameStartedAt = gameState.startedAt || finishedGameStartedAt;
     const result = resultDetails();
     const panel = document.createElement("section");
     panel.className = `chess-result chess-result--${result.kind}`;
@@ -267,7 +273,11 @@ export async function renderChessGame(container, room, user) {
       try {
         // The room owner cannot leave their own room under the existing
         // membership rules; they can return to the room directory instead.
-        if (room.hostId !== user.id) await leaveOnlineRoom(room.id);
+        if (room.hostId === user.id) {
+          await invokeChess({ action: "return_to_lobby", room_id: room.id });
+        } else {
+          await leaveOnlineRoom(room.id);
+        }
         window.location.hash = "#/rooms";
       } catch (error) {
         noticeElement.textContent = error.message;
