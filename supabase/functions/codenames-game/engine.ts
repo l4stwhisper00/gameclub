@@ -83,6 +83,9 @@ export function applyCodenamesAction(source: CodenamesState, playerId: string, a
     if (state.captains[team] !== playerId) throw new Error("Подсказку может давать только капитан команды.");
     const text = String(action.text || "").trim().replace(/\s+/g, " ");
     if (!text || text.length > 32 || /\s/.test(text)) throw new Error("Подсказка должна состоять из одного слова до 32 символов.");
+    if (state.words.some((word) => word.word.toLocaleLowerCase() === text.toLocaleLowerCase())) {
+      throw new Error("Подсказка не может совпадать со словом на поле.");
+    }
     if (!Number.isInteger(action.count) || action.count < 0 || action.count > 9) throw new Error("Число подсказки должно быть от 0 до 9.");
     state.clue = { text, count: action.count, by: playerId };
     state.phase = "guess"; state.guessesThisTurn = 0;
