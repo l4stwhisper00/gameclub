@@ -11,6 +11,8 @@ create table if not exists public.club_room_game_states (
 
 create index if not exists club_room_game_states_updated_at_idx
   on public.club_room_game_states(updated_at desc);
+create index if not exists club_room_game_states_updated_by_idx
+  on public.club_room_game_states(updated_by);
 
 alter table public.club_room_game_states enable row level security;
 
