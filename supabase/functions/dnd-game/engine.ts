@@ -10,7 +10,7 @@ export interface DndNpc {
   conditions: string[]; kind: "npc";
 }
 export interface DndState {
-  gameId: "dnd-5e"; status: "active";
+  gameId: "dnd-5e"; status: "active" | "finished";
   hostId: string; players: string[];
   characters: Record<string, DndCharacter>; npcs: Record<string, DndNpc>;
   combatActive: boolean; turnOrder: string[]; initiative: Record<string, number>;
@@ -27,6 +27,7 @@ export type DndAction =
   | { type: "start_combat" }
   | { type: "next_turn" }
   | { type: "end_combat" }
+  | { type: "end_campaign" }
   | { type: "damage"; targetId: string; amount: number }
   | { type: "heal"; targetId: string; amount: number }
   | { type: "condition"; targetId: string; condition: string; enabled: boolean }
@@ -78,6 +79,7 @@ export function startDndCampaign(playerIds: string[], hostId: string): DndState 
 export function applyDndAction(source: DndState, playerId: string, action: DndAction, random: () => number = Math.random): DndState {
   const state = structuredClone(source);
   if (!state.players.includes(playerId)) throw new Error("Ты не участник этой кампании.");
+  if (state.status !== "active" && action.type !== "private_note") throw new Error("Кампания завершена.");
   if (action.type === "create_character") {
     if (Object.values(state.characters).some((item) => item.ownerId === playerId)) throw new Error("У тебя уже есть персонаж в этой кампании.");
     const name = String(action.name || "").trim().slice(0, 32);
@@ -192,6 +194,15 @@ export function applyDndAction(source: DndState, playerId: string, action: DndAc
     state.currentTurnIndex = nextIndex;
     const nextId = state.turnOrder[state.currentTurnIndex];
     addEvent(state, "turn", "Ход: " + combatant(state, nextId).name + ".", playerId);
+    return state;
+  }
+  if (action.type === "end_campaign") {
+    if (!isHost(state, playerId)) throw new Error("Завершить кампанию может только ведущий.");
+    state.status = "finished";
+    state.combatActive = false;
+    state.turnOrder = [];
+    state.initiative = {};
+    addEvent(state, "campaign", "Мастер завершил кампанию.", playerId);
     return state;
   }
   if (action.type === "end_combat") {
