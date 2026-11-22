@@ -1,8 +1,8 @@
 import { assertEquals, assertThrows } from "jsr:@std/assert@1";
-import { applyDndAction, getDndPrivateState, getDndPublicState, rollDndDice, startDndCampaign } from "./engine.ts";
+import { applyDndAction, getDndPrivateState, getDndPublicState, rollDndDice, startDndCampaign, type DndState } from "./engine.ts";
 
 const players = ["host", "p2", "p3"];
-function character(state, playerId, name) {
+function character(state: DndState, playerId: string, name: string): DndState {
   return applyDndAction(state, playerId, {
     type: "create_character", name, ancestry: "Человек", className: "fighter",
     level: 3, maxHp: 28, ac: 16, initiativeBonus: 2, speed: 30, hitDie: 10, conModifier: 2
