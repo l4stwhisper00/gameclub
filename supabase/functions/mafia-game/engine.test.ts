@@ -28,7 +28,9 @@ Deno.test("mafia votes only for a living non-mafia player", () => {
   const otherMafia = playersWithRole(state, "mafia")[1];
   assertThrows(() => applyMafiaAction(state, civilian, { type: "mafia_vote", targetId: mafia }));
   assertThrows(() => applyMafiaAction(state, mafia, { type: "mafia_vote", targetId: otherMafia }));
-  const next = applyMafiaAction(state, mafia, { type: "mafia_vote", targetId: civilian });
+  let next = applyMafiaAction(state, mafia, { type: "mafia_vote", targetId: civilian });
+  assertEquals(next.nightTargetId, null);
+  next = applyMafiaAction(next, otherMafia, { type: "mafia_vote", targetId: civilian });
   assertEquals(next.nightTargetId, civilian);
 });
 
