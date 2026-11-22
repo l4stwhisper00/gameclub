@@ -124,5 +124,5 @@ export function getBunkerPublicState(state:BunkerState){
 }
 export function getBunkerPrivateState(state:BunkerState,playerId:string){
   if(!state.players.some((player)=>player.id===playerId))throw new Error("Ты не участник этой игры.");
-  return {attributes:state.secrets[playerId]};
+  return {attributes:state.secrets[playerId],hasVoted:Boolean(state.votes[playerId])};
 }
