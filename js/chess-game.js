@@ -200,6 +200,36 @@ export async function renderChessGame(container, room, user) {
     render();
   }
 
+  function choosePromotion() {
+    return new Promise((resolve) => {
+      const dialog = document.createElement("dialog");
+      dialog.className = "chess-promotion-dialog";
+      dialog.innerHTML = `
+        <p>Во что превратить пешку?</p>
+        <div class="chess-promotion-dialog__choices">
+          <button type="button" data-promotion="q" aria-label="Ферзь">♕</button>
+          <button type="button" data-promotion="r" aria-label="Ладья">♖</button>
+          <button type="button" data-promotion="b" aria-label="Слон">♗</button>
+          <button type="button" data-promotion="n" aria-label="Конь">♘</button>
+        </div>
+        <button class="chess-promotion-dialog__cancel" type="button">Отмена</button>`;
+      let choice = null;
+      dialog.querySelectorAll("[data-promotion]").forEach((button) => {
+        button.addEventListener("click", () => {
+          choice = button.dataset.promotion;
+          dialog.close();
+        });
+      });
+      dialog.querySelector(".chess-promotion-dialog__cancel").addEventListener("click", () => dialog.close());
+      dialog.addEventListener("close", () => {
+        dialog.remove();
+        resolve(choice);
+      }, { once: true });
+      container.append(dialog);
+      dialog.showModal();
+    });
+  }
+
   async function submitMove(from, to, promotion = "q") {
     if (!gameState || busy) return;
     busy = true;
@@ -226,15 +256,18 @@ export async function renderChessGame(container, room, user) {
     }
   }
 
-  boardElement.addEventListener("click", (event) => {
+  boardElement.addEventListener("click", async (event) => {
     const squareButton = event.target.closest("[data-square]");
     if (!squareButton || squareButton.disabled || !gameState || busy) return;
     const square = squareButton.dataset.square;
     const chess = getChess();
 
     if (selectedSquare && legalTargets.includes(square)) {
-      const candidate = chess.moves({ square: selectedSquare, verbose: true }).find((move) => move.to === square);
-      submitMove(selectedSquare, square, candidate?.promotion || "q");
+      const candidates = chess.moves({ square: selectedSquare, verbose: true }).filter((move) => move.to === square);
+      const promotionMoves = candidates.filter((move) => move.promotion);
+      const promotion = promotionMoves.length ? await choosePromotion() : "q";
+      if (promotionMoves.length && !promotion) return;
+      submitMove(selectedSquare, square, promotion);
       return;
     }
 
