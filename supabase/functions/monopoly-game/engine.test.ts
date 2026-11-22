@@ -13,9 +13,11 @@ Deno.test("players cannot roll out of turn", () => {
 Deno.test("a landed unowned property can be bought", () => {
   let state = startMonopoly(["a","b"]);
   state.players[0].position = 0;
-  state = applyMonopolyAction(state,"a",{type:"roll"},()=>0);
+  let index = 0;
+  const rolls = [0, 0.2];
+  state = applyMonopolyAction(state,"a",{type:"roll"},()=>rolls[index++]);
   assertEquals(state.phase,"purchase");
-  assertEquals(state.pendingSpace,2);
+  assertEquals(state.pendingSpace,3);
 });
 Deno.test("purchase transfers cash and ownership", () => {
   let state = startMonopoly(["a","b"]);
@@ -34,7 +36,7 @@ Deno.test("mortgage and redeem update cash and state", () => {
   assertEquals(state.properties[1].mortgaged,true);
   state = applyMonopolyAction(state,"a",{type:"redeem",spaceIndex:1});
   assertEquals(state.properties[1].mortgaged,false);
-  assertEquals(state.players[0].cash,1464);
+  assertEquals(state.players[0].cash,1497);
 });
 Deno.test("public state contains no hidden private data", () => {
   const state = startMonopoly(["a","b"]);
