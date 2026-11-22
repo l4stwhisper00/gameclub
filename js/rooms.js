@@ -5,6 +5,7 @@ import { GAMES, getGameById } from "./games.js";
 import { renderRoomChat, addRoomSystemMessage } from "./chat.js";
 import { renderGameRules } from "./game-rules.js";
 import { renderChessGame, startOnlineChessGame } from "./chess-game.js";
+import { renderGameTable } from "./game-table.js";
 import { ensurePublicProfile, listOnlineRooms, getOnlineRoom, createOnlineRoom, joinOnlineRoom, leaveOnlineRoom, setOnlineRoomStatus, removeOnlineRoomMember, deleteOnlineRoom } from "./online-rooms.js";
 let onlineRoomsCache = [];
 
@@ -795,9 +796,9 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
 
       <div class="room-detail-grid">
         <div class="room-detail-main">
-          ${room.status === "playing" ? (game.id === "chess"
-            ? `<div id="room-game-mount"></div>`
-            : `<section class="room-panel room-game-coming"><span class="eyebrow">ИГРОВОЙ СТОЛ</span><h2>${escapeHTML(game.title)}</h2><p>Интерактивный интерфейс этой игры пока не подключён. Комната, участники и чат продолжают работать.</p></section>`) : ""}
+          ${game.id === "chess"
+            ? (room.status === "playing" ? `<div id="room-game-mount"></div>` : "")
+            : `<div id="room-game-mount"></div>`}
           <section class="room-panel">
             <div class="room-panel__heading"><div><span class="eyebrow">КОМАНДА</span><h2>Участники</h2></div><span class="room-member-count">${members.length}/${room.maxPlayers}</span></div>
             <div class="room-members">
@@ -874,13 +875,13 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
 
   const chatMount = container.querySelector("#room-chat-mount");
   if (chatMount) renderRoomChat(chatMount, room, user);
-  if (room.status === "playing" && game.id === "chess") {
-    const gameMount = container.querySelector("#room-game-mount");
-    if (gameMount) {
-      const cleanup = await renderChessGame(gameMount, room, user);
-      if (renderSequence !== roomRenderSequence) cleanup();
-      else activeChessCleanup = cleanup;
-    }
+  const gameMount = container.querySelector("#room-game-mount");
+  if (game.id === "chess" && room.status === "playing" && gameMount) {
+    const cleanup = await renderChessGame(gameMount, room, user);
+    if (renderSequence !== roomRenderSequence) cleanup();
+    else activeChessCleanup = cleanup;
+  } else if (game.id !== "chess" && gameMount) {
+    renderGameTable(gameMount, room, game, user);
   }
   if (renderSequence !== roomRenderSequence) return;
 
