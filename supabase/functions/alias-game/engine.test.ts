@@ -39,3 +39,11 @@ Deno.test("first team to target score wins", () => {
   assertEquals(state.status,"finished");
   assertEquals(state.winnerTeam,"red");
 });
+
+Deno.test("only the host can end an Alias session", () => {
+  const state=startAlias(["a","b","c","d"],()=>0.3,"a");
+  assertThrows(()=>applyAliasAction(state,"b",{type:"end_game"}));
+  const ended=applyAliasAction(state,"a",{type:"end_game"});
+  assertEquals(ended.status,"finished");
+  assertEquals(getAliasPrivateState(ended,"a").word,null);
+});
