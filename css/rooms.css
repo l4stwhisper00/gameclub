@@ -395,3 +395,27 @@
 .chess-result__symbol,.chess-result--win .chess-result__symbol,.chess-result--loss .chess-result__symbol,.chess-result--draw .chess-result__symbol { color:#c5a46d;text-shadow:none; }
 .chess-result__card h2 { font:400 clamp(28px,6vw,38px) var(--font-display);letter-spacing:0; }
 @media(max-width:760px) { .rooms-hero { grid-template-columns:1fr;min-height:0; } .rooms-hero__dice { display:none; } }
+
+/* Dark theme integration for room lobby and room creator. */
+html[data-theme] .room-create-page,html[data-theme] .rooms-page,html[data-theme] .room-detail-page { color:var(--theme-text);--room-line:var(--theme-line); }
+html[data-theme] .room-form-card,html[data-theme] .room-panel,html[data-theme] .room-detail-hero,html[data-theme] .room-card,html[data-theme] .rooms-empty { color:var(--theme-text);border-color:var(--theme-line);background:linear-gradient(145deg,color-mix(in srgb,var(--theme-panel) 97%,var(--theme-accent) 3%),var(--theme-panel));box-shadow:0 20px 65px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.025); }
+html[data-theme] .room-form-section + .room-form-section,html[data-theme] .room-create-footer,html[data-theme] .room-detail-hero__facts { border-color:var(--theme-line); }
+html[data-theme] .room-form-section__heading>span,html[data-theme] .room-visibility-icon,html[data-theme] .room-member-count,html[data-theme] .room-panel__icon { color:var(--theme-accent);border-color:var(--theme-line);background:color-mix(in srgb,var(--theme-accent) 13%,var(--theme-panel)); }
+html[data-theme] .room-form-section__heading h2,html[data-theme] .room-card__content h3,html[data-theme] .room-panel__heading h2,html[data-theme] .room-detail-hero h1,html[data-theme] .room-host-identity strong,html[data-theme] .room-member__identity strong,html[data-theme] .room-rule-row strong,html[data-theme] .room-visibility-option strong { color:var(--theme-text); }
+html[data-theme] .room-form-section__heading p,html[data-theme] .room-form-field>label,html[data-theme] .room-field-hint,html[data-theme] .room-card__description,html[data-theme] .room-card__host,html[data-theme] .room-card__meta,html[data-theme] .room-detail-hero p,html[data-theme] .room-rule-row span,html[data-theme] .room-host-identity span,html[data-theme] .room-detail-hint,html[data-theme] .room-visibility-option small,html[data-theme] .room-page-heading .lead { color:var(--theme-muted); }
+html[data-theme] .room-input,html[data-theme] .rooms-search,html[data-theme] .rooms-select { color:var(--theme-text);border-color:var(--theme-line);background:color-mix(in srgb,var(--theme-bg) 80%,var(--theme-panel)); }
+html[data-theme] .room-input::placeholder,html[data-theme] .rooms-search input::placeholder { color:var(--theme-muted); }
+html[data-theme] .room-input option { color:var(--theme-text);background:var(--theme-panel); }
+html[data-theme] .room-input:focus { border-color:var(--theme-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--theme-accent) 18%,transparent); }
+html[data-theme] .room-visibility-option,html[data-theme] .room-check-grid label,html[data-theme] .room-member,html[data-theme] .room-rule-row { color:var(--theme-text);border-color:var(--theme-line);background:color-mix(in srgb,var(--theme-panel) 88%,var(--theme-bg)); }
+html[data-theme] .room-visibility-option.is-selected { border-color:var(--theme-accent);background:color-mix(in srgb,var(--theme-accent) 17%,var(--theme-panel)); }
+html[data-theme] .room-visibility-option strong,html[data-theme] .room-check-grid label { color:var(--theme-text); }
+html[data-theme] .room-check-grid input { accent-color:var(--theme-accent); }
+html[data-theme] .room-button--primary,html[data-theme] .room-submit,html[data-theme] .room-join-main { color:#101510!important;background:linear-gradient(115deg,var(--theme-accent),color-mix(in srgb,var(--theme-accent) 70%,white))!important;border:1px solid color-mix(in srgb,var(--theme-accent) 80%,white)!important;box-shadow:0 9px 28px color-mix(in srgb,var(--theme-accent) 22%,transparent),inset 0 1px rgba(255,255,255,.2)!important; }
+html[data-theme] .room-button--primary:hover,html[data-theme] .room-submit:hover,html[data-theme] .room-join-main:hover { transform:translateY(-2px);filter:brightness(1.08);box-shadow:0 13px 34px color-mix(in srgb,var(--theme-accent) 30%,transparent)!important; }
+html[data-theme] .room-button--soft { color:var(--theme-text);border-color:var(--theme-line);background:color-mix(in srgb,var(--theme-panel) 84%,transparent); }
+html[data-theme] .room-button--soft:hover { color:var(--theme-text);border-color:var(--theme-accent);background:color-mix(in srgb,var(--theme-accent) 13%,var(--theme-panel)); }
+html[data-theme] .room-back-link:hover { color:var(--theme-accent); }
+html[data-theme] .room-detail-hero { background:radial-gradient(ellipse at 82% 15%,color-mix(in srgb,var(--theme-accent) 20%,transparent),transparent 44%),linear-gradient(145deg,var(--theme-panel),var(--theme-bg)); }
+html[data-theme] .room-card__banner { background:radial-gradient(ellipse at 50% 100%,color-mix(in srgb,var(--room-tone) 35%,transparent),transparent 60%),var(--theme-card); }
+html[data-theme="sakura"] .room-form-card,html[data-theme="sakura"] .room-panel,html[data-theme="sakura"] .room-detail-hero,html[data-theme="sakura"] .room-card { background:linear-gradient(145deg,rgba(66,43,59,.97),rgba(40,27,39,.98)); }
