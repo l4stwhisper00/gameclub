@@ -234,27 +234,59 @@ export async function renderChessGame(container, room, user) {
 
   async function submitMove(from, to, promotion = "q") {
     if (!gameState || busy) return;
+
+    const previousState = gameState;
+    const previousRevision = revision;
+    const preview = getChess();
+    let previewMove;
+    try {
+      previewMove = preview.move({ from, to, promotion });
+    } catch {
+      return;
+    }
+    if (!previewMove) return;
+
+    // Render the player's legal move immediately. The server remains
+    // authoritative: input is locked until it confirms the new revision.
     busy = true;
-    noticeElement.textContent = "Ход отправлен. Ждём подтверждение сервера…";
+    selectedSquare = null;
+    gameState = {
+      ...previousState,
+      fen: preview.fen(),
+      pgn: preview.pgn(),
+      turn: preview.turn(),
+      lastMove: { san: previewMove.san, from: previewMove.from, to: previewMove.to },
+      outcome: null,
+      status: "active"
+    };
+    render();
+    noticeElement.textContent = "Подтверждаем ход…";
+
+    let moveError = null;
     try {
       const data = await invokeChess({
         action: "move",
         room_id: room.id,
-        revision,
+        revision: previousRevision,
         from,
         to,
         promotion
       });
       gameState = data.state;
       revision = Number(data.revision);
-      selectedSquare = null;
-      render();
     } catch (error) {
-      noticeElement.textContent = error.message;
-      try { await loadState(); } catch { /* Preserve the move error. */ }
+      gameState = previousState;
+      revision = previousRevision;
+      try {
+        await loadState();
+      } catch {
+        // Keep the optimistic rollback and show the original request error.
+      }
+      moveError = error.message;
     } finally {
       busy = false;
       render();
+      if (moveError) noticeElement.textContent = moveError;
     }
   }
 
