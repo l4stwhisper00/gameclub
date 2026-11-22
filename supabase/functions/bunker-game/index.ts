@@ -1,5 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { applyBunkerAction, getBunkerPrivateState, getBunkerPublicState, startBunker, type BunkerAction, type BunkerState } from "./engine.ts";
+import { applyBunkerAction, getBunkerPrivateState, getBunkerPublicState, startBunker, type BunkerAction, type BunkerState, type BunkerCategory } from "./engine.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -38,7 +38,7 @@ async function commitSession(admin: any, roomId: string, userId: string, expecte
 }
 function parseAction(body: Record<string, unknown>): BunkerAction {
   const type = String(body.action || "");
-  if (type === "reveal") return { type, category: String(body.category || "") as BunkerAction & never };
+  if (type === "reveal") return { type, category: String(body.category || "") as BunkerCategory };
   if (type === "start_vote") return { type };
   if (type === "vote") return { type, targetId: String(body.target_id || "") };
   throw new HttpError(400, "Неизвестное действие.");
