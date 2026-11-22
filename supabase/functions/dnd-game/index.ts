@@ -51,7 +51,7 @@ function parseAction(body: Record<string, unknown>): DndAction {
   if (type === "add_npc") return {
     type, name: String(body.name || ""), maxHp: Number(body.max_hp), ac: Number(body.ac), initiativeBonus: Number(body.initiative_bonus)
   };
-  if (type === "start_combat" || type === "next_turn" || type === "end_combat") return { type };
+  if (type === "start_combat" || type === "next_turn" || type === "end_combat" || type === "end_campaign") return { type };
   if (type === "damage" || type === "heal") return { type, targetId: String(body.target_id || ""), amount: Number(body.amount) };
   if (type === "condition") return { type, targetId: String(body.target_id || ""), condition: String(body.condition || ""), enabled: Boolean(body.enabled) };
   if (type === "rest") return { type, kind: body.kind === "long" ? "long" : "short", hitDiceSpent: Number(body.hit_dice_spent || 0) };
