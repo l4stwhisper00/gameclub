@@ -43,3 +43,13 @@ Deno.test("public state contains no hidden private data", () => {
   const view = getMonopolyPublicState(state);
   assertEquals("secret" in view,false);
 });
+
+Deno.test("rent is transferred to the owner after passing GO", () => {
+  let state = startMonopoly(["a","b"]);
+  state.players[0].position = 39;
+  state.properties[1].ownerId = "b";
+  state = applyMonopolyAction(state,"a",{type:"roll"},()=>0);
+  assertEquals(state.players[0].position,1);
+  assertEquals(state.players[0].cash,1698);
+  assertEquals(state.players[1].cash,1502);
+});
