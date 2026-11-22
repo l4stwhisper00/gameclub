@@ -568,3 +568,31 @@ html[data-theme="dynamic"] .feature-tile { border:1px solid var(--theme-line);bo
 @media(max-width:760px) {
  html[data-theme="arcade"] .home-hero,html[data-theme="cozy"] .home-hero,html[data-theme="vivid"] .home-hero,html[data-theme="fantasy"] .home-hero,html[data-theme="cyberpunk"] .home-hero,html[data-theme="nature"] .home-hero,html[data-theme="classic"] .home-hero,html[data-theme="sakura"] .home-hero,html[data-theme="dynamic"] .home-hero { padding:28px 18px 34px; }
 }
+
+
+/* Full scenic artwork backgrounds for every theme. Images are authored SVG assets. */
+html[data-theme] body {
+  background-image:linear-gradient(90deg,rgba(5,9,15,.80) 0%,rgba(5,9,15,.56) 46%,rgba(5,9,15,.20) 100%),url("../assets/theme-backgrounds/arcade.svg") !important;
+  background-size:cover !important;background-position:center center !important;background-attachment:fixed !important;
+  background-repeat:no-repeat !important;
+}
+html[data-theme="arcade"] body { background-image:linear-gradient(90deg,rgba(5,6,20,.88),rgba(5,6,20,.54) 52%,rgba(5,6,20,.18)),url("../assets/theme-backgrounds/arcade.svg") !important; }
+html[data-theme="cozy"] body { background-image:linear-gradient(90deg,rgba(242,232,211,.88),rgba(242,232,211,.60) 54%,rgba(242,232,211,.18)),url("../assets/theme-backgrounds/cozy.svg") !important; }
+html[data-theme="vivid"] body { background-image:linear-gradient(90deg,rgba(2,36,62,.88),rgba(2,36,62,.55) 52%,rgba(2,36,62,.14)),url("../assets/theme-backgrounds/vivid.svg") !important; }
+html[data-theme="minimal"] body { background-image:linear-gradient(90deg,rgba(13,19,16,.92),rgba(13,19,16,.72) 58%,rgba(13,19,16,.34)),url("../assets/theme-backgrounds/minimal.svg") !important; }
+html[data-theme="fantasy"] body { background-image:linear-gradient(90deg,rgba(26,19,17,.91),rgba(26,19,17,.64) 54%,rgba(26,19,17,.18)),url("../assets/theme-backgrounds/fantasy.svg") !important; }
+html[data-theme="cyberpunk"] body { background-image:linear-gradient(90deg,rgba(5,8,27,.91),rgba(5,8,27,.60) 50%,rgba(5,8,27,.12)),url("../assets/theme-backgrounds/cyberpunk.svg") !important; }
+html[data-theme="nature"] body { background-image:linear-gradient(90deg,rgba(14,35,24,.88),rgba(14,35,24,.55) 50%,rgba(14,35,24,.16)),url("../assets/theme-backgrounds/nature.svg") !important; }
+html[data-theme="classic"] body { background-image:linear-gradient(90deg,rgba(20,13,8,.92),rgba(20,13,8,.66) 55%,rgba(20,13,8,.2)),url("../assets/theme-backgrounds/classic.svg") !important; }
+html[data-theme="sakura"] body { background-image:linear-gradient(90deg,rgba(43,31,43,.90),rgba(62,42,54,.72) 48%,rgba(43,31,43,.25)),url("../assets/theme-backgrounds/sakura.svg") !important;background-position:center 46% !important; }
+html[data-theme="dynamic"] body { background-image:linear-gradient(90deg,rgba(3,17,32,.91),rgba(3,17,32,.60) 50%,rgba(3,17,32,.12)),url("../assets/theme-backgrounds/dynamic.svg") !important; }
+
+html[data-theme] .home-hero,html[data-theme] .feature-strip { position:relative; }
+html[data-theme="cozy"] .home-hero,html[data-theme="cozy"] .auth-card,html[data-theme="cozy"] .profile-card { color:#29291f; }
+html[data-theme="cozy"] .home-hero { background:rgba(250,244,231,.62);backdrop-filter:blur(5px); }
+html[data-theme="sakura"] .home-hero { background:linear-gradient(105deg,rgba(45,30,43,.92),rgba(66,43,57,.68));backdrop-filter:blur(4px); }
+html[data-theme="sakura"] .auth-card,html[data-theme="sakura"] .profile-card,html[data-theme="sakura"] .room-card,html[data-theme="sakura"] .game-card { background:rgba(62,39,51,.91); }
+html[data-theme="arcade"] .home-hero,html[data-theme="fantasy"] .home-hero,html[data-theme="cyberpunk"] .home-hero,html[data-theme="classic"] .home-hero,html[data-theme="dynamic"] .home-hero { backdrop-filter:blur(5px); }
+@media(max-width:760px) {
+ html[data-theme] body { background-position:58% center !important;background-attachment:scroll !important; }
+}
