@@ -48,7 +48,7 @@ export function applyAvalonAction(source:AvalonState,playerId:string,action:Aval
   state.teamVotes[playerId]=Boolean(action.approve);
   if(Object.keys(state.teamVotes).length===state.players.length){
    const approvals=Object.values(state.teamVotes).filter(Boolean).length;
-   if(approvals>state.players.length/2){state.phase="mission_vote";state.missionVotes={};state.lastEvent="Команда утверждена. Участники миссии тайно выбирают успех или провал.";}
+   if(approvals>state.players.length/2){state.rejectedProposals=0;state.phase="mission_vote";state.missionVotes={};state.lastEvent="Команда утверждена. Участники миссии тайно выбирают успех или провал.";}
    else{
     state.rejectedProposals+=1;state.proposal=[];state.leaderIndex=(state.leaderIndex+1)%state.players.length;
     if(state.rejectedProposals>=5){state.status="finished";state.phase="finished";state.winner="evil";state.lastEvent="Пять команд подряд отклонены. Побеждает зло.";}
