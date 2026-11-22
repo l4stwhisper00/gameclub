@@ -31,3 +31,13 @@ Deno.test("only the chancellor can enact one of two policies",()=>{
  assertEquals(state.chancellorHand.length,2);
  assertThrows(()=>applySecretHitlerAction(state,president,{type:"chancellor_enact",index:0}));
 });
+
+Deno.test("executed players leave elections but keep their original hidden role",()=>{
+ let state=startSecretHitler(["a","b","c","d","e"],"a",()=>0.3);
+ const president=state.players[state.presidentIndex],target=state.players.find((id)=>id!==president&&state.roles[id]!=="hitler")!;
+ state.phase="execute";
+ state=applySecretHitlerAction(state,president,{type:"execute",targetId:target});
+ assertEquals(getSecretHitlerPublicState(state).players.some((p)=>p.id===target),false);
+ assertEquals(getSecretHitlerPrivateState(state,target).isAlive,false);
+ assertEquals(state.roles[target]==="liberal"||state.roles[target]==="fascist",true);
+});
