@@ -41,14 +41,14 @@ Deno.serve(async(req:Request)=>{
    const existing=await loadSession(admin,roomId);if(existing?.public_state?.status==="active")throw new HttpError(409,"Игра уже идёт.");
    const state=startEkivoki(playerIds,room.host_id);
    const revision=await commitSession(admin,roomId,user.id,existing?.revision??-1,state,true);
-   return json({state:getCrocodilePublicState(state),privateState:getEkivokiPrivateState(state,user.id),revision});
+   return json({state:getEkivokiPublicState(state),privateState:getEkivokiPrivateState(state,user.id),revision});
   }
   const session=await loadSession(admin,roomId);if(!session||session.game_id!=="ekivoki")throw new HttpError(404,"Игра ещё не началась.");
-  if(actionName==="state")return json({state:session.public_state,privateState:getCrocodilePrivateState(session.secret_state,user.id),revision:session.revision});
+  if(actionName==="state")return json({state:session.public_state,privateState:getEkivokiPrivateState(session.secret_state,user.id),revision:session.revision});
   if(room.status!=="playing")throw new HttpError(409,"Игра сейчас не активна.");
   const expectedRevision=Number(body.revision);if(!Number.isSafeInteger(expectedRevision)||expectedRevision!==session.revision)throw new HttpError(409,"Игровое поле уже обновилось.");
   let nextState:EkivokiState;try{nextState=applyEkivokiAction(session.secret_state,user.id,parseAction(body));}catch(error){throw new HttpError(400,error instanceof Error?error.message:"Недопустимое действие.");}
   const revision=await commitSession(admin,roomId,user.id,expectedRevision,nextState);
-  return json({state:getCrocodilePublicState(nextState),privateState:getCrocodilePrivateState(nextState,user.id),revision});
+  return json({state:getEkivokiPublicState(nextState),privateState:getEkivokiPrivateState(nextState,user.id),revision});
  }catch(error){const status=error instanceof HttpError?error.status:500;return json({error:error instanceof Error?error.message:"Неизвестная ошибка сервера."},status);}
 });
