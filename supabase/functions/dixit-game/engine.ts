@@ -19,14 +19,14 @@ const CARDS:DixitCard[]=[
 function shuffle<T>(items:T[],random:()=>number):T[]{const a=[...items];for(let i=a.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function storyteller(state:DixitState){return state.players[state.storytellerIndex];}
 function draw(state:DixitState,playerId:string,count:number,random:()=>number){for(let i=0;i<count;i++){if(!state.deck.length){state.deck=shuffle(state.discard,random);state.discard=[];}const id=state.deck.pop();if(id)state.hands[playerId].push(id);}}
-function scoreRound(state:DixitState){
+function scoreRound(state:DixitState,random:()=>number){
  const votes=Object.values(state.votes),correct=state.correctSubmissionId!;
  const correctVotes=votes.filter((id)=>id===correct).length,guessers=state.players.filter((id)=>id!==storyteller(state)).length;
  if(correctVotes===0||correctVotes===guessers){for(const id of state.players){if(id!==storyteller(state))state.scores[id]+=2;}}
  else{state.scores[storyteller(state)]+=3;for(const id of state.players){if(id!==storyteller(state)&&state.votes[id]===correct)state.scores[id]+=3;}}
  for(const submission of state.submissions){if(submission.id!==correct){const count=votes.filter((id)=>id===submission.id).length;state.scores[submission.ownerId]+=count;}}
  state.discard.push(...state.submissions.map((item)=>item.cardId));
- for(const id of state.players)draw(state,id,6-state.hands[id].length,Math.random);
+ for(const id of state.players)draw(state,id,6-state.hands[id].length,random);
  state.phase="results";
  state.lastEvent="Раунд завершён. Очки начислены, карты раскрыты.";
  if(state.round>=8||Object.values(state.scores).some((score)=>score>=30)){
@@ -70,7 +70,7 @@ export function applyDixitAction(source:DixitState,playerId:string,action:DixitA
   const voters=state.players.filter((id)=>id!==storyteller(state));
   if(voters.every((id)=>state.votes[id])){
     state.correctSubmissionId=state.submissions.find((item)=>item.cardId===state.storyCardId)!.id;
-    scoreRound(state);
+    scoreRound(state,random);
   }else state.lastEvent="Голос принят. Ожидаем остальных.";
   return state;
  }
