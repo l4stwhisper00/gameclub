@@ -680,8 +680,14 @@ let roomRenderSequence = 0;
 let activeChessCleanup = null;
 
 async function renderRoom(container, roomId, user, inviteCode = "", renderSequence = roomRenderSequence) {
+  if (renderSequence === roomRenderSequence) {
+    activeChessCleanup?.();
+    activeChessCleanup = null;
+  }
   await ensurePublicProfile(user);
+  if (renderSequence !== roomRenderSequence) return;
   let room = await getOnlineRoom(roomId);
+  if (renderSequence !== roomRenderSequence) return;
   if (!room && inviteCode) {
     await joinOnlineRoom(roomId, inviteCode);
     notify("Ты присоединился к приватной комнате по приглашению.");
@@ -960,38 +966,39 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
   });
 }
 
-export async function renderRooms(container, route = "/rooms") {
+export function renderRooms(container, route = "/rooms") {
   const renderSequence = ++roomRenderSequence;
   activeChessCleanup?.();
   activeChessCleanup = null;
+  const cleanup = () => {
+    if (renderSequence === roomRenderSequence) roomRenderSequence += 1;
+    activeChessCleanup?.();
+    activeChessCleanup = null;
+  };
   ensureStyles();
   const user = getCurrentUser();
   if (!user) {
     location.hash = `#/login?next=${encodeURIComponent(route)}`;
-    return;
+    return cleanup;
   }
 
   const [path, query = ""] = route.split("?");
   if (path === "/rooms" || path === "/rooms/") {
     renderList(container, user).catch((error) => { container.innerHTML = "<p>Не удалось загрузить комнаты: " + escapeHTML(error.message) + "</p>"; });
-    return;
+    return cleanup;
   }
   if (path === "/rooms/new") {
     const params = new URLSearchParams(query);
     renderCreate(container, user, params.get("game") || "");
-    return;
+    return cleanup;
   }
 
   const roomId = decodeURIComponent(path.slice("/rooms/".length));
   if (!roomId || roomId === "new") {
     renderList(container, user);
-    return;
+    return cleanup;
   }
   const params = new URLSearchParams(query);
   renderRoom(container, roomId, user, params.get("invite") || "", renderSequence).catch((error) => { container.innerHTML = "<p>Не удалось открыть комнату: " + escapeHTML(error.message) + "</p>"; });
-  return () => {
-    if (renderSequence === roomRenderSequence) roomRenderSequence += 1;
-    activeChessCleanup?.();
-    activeChessCleanup = null;
-  };
+  return cleanup;
 }
