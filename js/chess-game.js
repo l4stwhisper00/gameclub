@@ -257,7 +257,7 @@ export async function renderChessGame(container, room, user) {
       const data = await invokeChess({
         action: "start",
         room_id: room.id,
-        opponent_mode: room.rules?.game?.opponentMode === "bot" ? "bot" : "human",
+        opponent_mode: room.rules?.game?.opponentMode === "bot" || (!room.rules?.game?.opponentMode && (room.members || []).length === 1) ? "bot" : "human",
         bot_difficulty: room.rules?.game?.botDifficulty || "medium"
       });
       gameState = data.state;
