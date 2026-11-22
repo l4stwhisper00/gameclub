@@ -208,7 +208,7 @@ export function applyUnoAction(
   state.unoCalledBy = state.unoCalledBy.filter((id) => id !== playerId);
   if (hand.length === 1) state.unoPenaltyPlayerId = playerId;
   else state.unoPenaltyPlayerId = null;
-  state.lastAction = { type: "play", playerId, card };
+  let actionDetail: string | undefined;
 
   if (hand.length === 0) {
     state.status = "finished";
@@ -228,8 +228,9 @@ export function applyUnoAction(
     const targetId = state.players[targetIndex];
     drawCards(state, targetId, card.kind === "draw2" ? 2 : 4, random);
     steps = 2;
-    state.lastAction.detail = `${targetId} берёт ${card.kind === "draw2" ? 2 : 4} карты и пропускает ход`;
+    actionDetail = `${targetId} берёт ${card.kind === "draw2" ? 2 : 4} карты и пропускает ход`;
   }
+  state.lastAction = { type: "play", playerId, card, ...(actionDetail ? { detail: actionDetail } : {}) };
   advance(state, steps);
   return state;
 }
