@@ -38,7 +38,7 @@ async function commitSession(admin: any, roomId: string, userId: string, expecte
 }
 function parseAction(body: Record<string, unknown>): MonopolyAction {
   const type = String(body.action || "");
-  if (type === "roll" || type === "buy" || type === "decline" || type === "pay_jail" || type === "use_jail_card" || type === "roll_jail") return { type };
+  if (type === "roll" || type === "buy" || type === "decline" || type === "pay_jail" || type === "use_jail_card" || type === "roll_jail" || type === "end_game") return { type };
   if (type === "build_house" || type === "mortgage" || type === "redeem") return { type, spaceIndex: Number(body.space_index) };
   throw new HttpError(400, "Неизвестное действие.");
 }
@@ -87,7 +87,7 @@ Deno.serve(async (req: Request) => {
       if (playerIds.length < 2 || playerIds.length > 6) throw new HttpError(400, "Для Монополии нужно от 2 до 6 игроков.");
       const existing = await loadSession(admin, roomId);
       if (existing?.public_state?.status === "active") throw new HttpError(409, "Партия уже идёт.");
-      const state = startMonopoly(playerIds);
+      const state = startMonopoly(playerIds, room.host_id);
       const revision = await commitSession(admin, roomId, user.id, existing?.revision ?? -1, state, true);
       return json({ state: getMonopolyPublicState(state), revision });
     }
