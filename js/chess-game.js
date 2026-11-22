@@ -303,6 +303,7 @@ export async function renderChessGame(container, room, user) {
       initButton.textContent = "Создать шахматную партию";
     } finally {
       busy = false;
+      render();
     }
   });
 
