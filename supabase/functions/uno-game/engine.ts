@@ -246,10 +246,13 @@ export function getUnoPublicState(state: UnoState) {
     topCard,
     drawPileCount: state.drawPile.length,
     discardPileCount: state.discardPile.length,
-    pendingDrawnCardId: state.pendingDrawnCardId,
+    hasPendingDrawnCard: Boolean(state.pendingDrawnCardId),
     unoPenaltyPlayerId: state.unoPenaltyPlayerId,
     winnerId: state.winnerId,
-    lastAction: state.lastAction
+    // A drawn card is private until it is played. Never publish its identity.
+    lastAction: state.lastAction?.type === "draw"
+      ? { type: "draw", playerId: state.lastAction.playerId, detail: state.lastAction.detail }
+      : state.lastAction
   };
 }
 
