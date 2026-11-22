@@ -596,3 +596,193 @@ html[data-theme="arcade"] .home-hero,html[data-theme="fantasy"] .home-hero,html[
 @media(max-width:760px) {
  html[data-theme] body { background-position:58% center !important;background-attachment:scroll !important; }
 }
+
+
+/* Final contrast pass: every control and profile surface follows the active theme.
+   Keep semantic states explicit; do not let legacy fixed light/dark colors leak through. */
+html[data-theme] {
+  --gc-control-bg:color-mix(in srgb,var(--theme-panel) 88%,var(--theme-bg));
+  --gc-control-hover:color-mix(in srgb,var(--theme-accent) 15%,var(--theme-panel));
+  --gc-control-border:var(--theme-line);
+  --gc-control-text:var(--theme-text);
+  --gc-control-muted:var(--theme-muted);
+  --gc-primary-text:#101510;
+}
+html[data-theme] .profile-card,
+html[data-theme] .auth-card,
+html[data-theme] .settings-form-card,
+html[data-theme] .settings-aside .profile-card {
+  color:var(--theme-text)!important;
+  background:color-mix(in srgb,var(--theme-panel) 94%,transparent)!important;
+  border:1px solid var(--theme-line)!important;
+}
+html[data-theme] .profile-name,
+html[data-theme] .profile-card h1,
+html[data-theme] .profile-card h2,
+html[data-theme] .profile-card h3,
+html[data-theme] .profile-card strong,
+html[data-theme] .auth-card h1,
+html[data-theme] .auth-card h2,
+html[data-theme] .settings-form-card h2,
+html[data-theme] .settings-form-card h3 {
+  color:var(--theme-text)!important;
+}
+html[data-theme] .profile-meta,
+html[data-theme] .favorite-option,
+html[data-theme] .profile-stat,
+html[data-theme] .settings-aside,
+html[data-theme] .settings-form-card .form-group,
+html[data-theme] .settings-section {
+  color:var(--theme-text)!important;
+  background:var(--gc-control-bg)!important;
+  border-color:var(--gc-control-border)!important;
+}
+html[data-theme] .profile-meta-label,
+html[data-theme] .profile-public-note,
+html[data-theme] .profile-status,
+html[data-theme] .profile-bio,
+html[data-theme] .profile-section p,
+html[data-theme] .auth-subtitle,
+html[data-theme] .settings-form-card small,
+html[data-theme] .settings-form-card .form-hint {
+  color:var(--theme-muted)!important;
+}
+html[data-theme] .profile-meta-value,
+html[data-theme] .profile-meta a,
+html[data-theme] .profile-meta time,
+html[data-theme] .profile-card .profile-section,
+html[data-theme] .profile-card .profile-section li {
+  color:var(--theme-text)!important;
+}
+html[data-theme] .form-input,
+html[data-theme] input.form-input,
+html[data-theme] textarea.form-input,
+html[data-theme] select.form-input,
+html[data-theme] .settings-form-card input,
+html[data-theme] .settings-form-card textarea,
+html[data-theme] .settings-form-card select {
+  color:var(--theme-text)!important;
+  background:var(--gc-control-bg)!important;
+  border:1px solid var(--theme-line)!important;
+  caret-color:var(--theme-accent);
+}
+html[data-theme] .form-input::placeholder,
+html[data-theme] .settings-form-card input::placeholder,
+html[data-theme] .settings-form-card textarea::placeholder {
+  color:var(--theme-muted)!important;opacity:.85;
+}
+html[data-theme] .form-input:focus,
+html[data-theme] .settings-form-card input:focus,
+html[data-theme] .settings-form-card textarea:focus,
+html[data-theme] .settings-form-card select:focus {
+  border-color:var(--theme-accent)!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--theme-accent) 19%,transparent)!important;
+}
+html[data-theme] .button,
+html[data-theme] button.button,
+html[data-theme] a.button,
+html[data-theme] .room-button,
+html[data-theme] .catalog-button {
+  transition:color .18s,background .18s,border-color .18s,transform .18s;
+}
+html[data-theme] .button--primary,
+html[data-theme] .room-button--primary,
+html[data-theme] .catalog-button--primary {
+  color:var(--gc-primary-text)!important;
+  background:var(--theme-accent)!important;
+  border:1px solid var(--theme-accent)!important;
+  text-shadow:none!important;opacity:1!important;
+}
+html[data-theme] .button--primary:hover,
+html[data-theme] .room-button--primary:hover,
+html[data-theme] .catalog-button--primary:hover {
+  color:var(--gc-primary-text)!important;
+  background:color-mix(in srgb,var(--theme-accent) 82%,white)!important;
+}
+html[data-theme] .button--ghost,
+html[data-theme] .button--secondary,
+html[data-theme] .room-button--soft,
+html[data-theme] .catalog-button--quiet,
+html[data-theme] .profile-actions a:not(.button--primary) {
+  color:var(--theme-text)!important;
+  background:color-mix(in srgb,var(--theme-panel) 80%,transparent)!important;
+  border:1px solid var(--theme-line)!important;
+  opacity:1!important;
+}
+html[data-theme] .button--ghost:hover,
+html[data-theme] .button--secondary:hover,
+html[data-theme] .room-button--soft:hover,
+html[data-theme] .catalog-button--quiet:hover {
+  border-color:var(--theme-accent)!important;
+  background:var(--gc-control-hover)!important;
+}
+html[data-theme] .profile-actions a,
+html[data-theme] .profile-actions button,
+html[data-theme] .profile-card a,
+html[data-theme] .settings-form-card a {
+  text-decoration-color:color-mix(in srgb,var(--theme-accent) 65%,transparent);
+}
+html[data-theme] .favorite-option:has(input:checked) {
+  color:var(--theme-text)!important;
+  border-color:var(--theme-accent)!important;
+  background:color-mix(in srgb,var(--theme-accent) 18%,var(--theme-panel))!important;
+}
+html[data-theme] .favorite-option input { accent-color:var(--theme-accent); }
+html[data-theme] .theme-picker-trigger,
+html[data-theme] .theme-drawer__close,
+html[data-theme] .theme-drawer__current,
+html[data-theme] .theme-card {
+  color:var(--theme-text)!important;
+}
+
+/* Sakura is intentionally a dusk theme, not a pale-pink/light theme. */
+html[data-theme="sakura"] {
+  color-scheme:dark;
+  --theme-bg:#35232f;--theme-panel:rgba(54,35,47,.96);--theme-card:#49303f;
+  --theme-line:rgba(218,157,177,.34);--theme-text:#f6eaf0;--theme-muted:#d0b4c0;
+  --theme-accent:#e29ab1;--gc-primary-text:#321c29;
+  --gc-control-bg:#402b39;
+}
+html[data-theme="sakura"] .profile-meta,
+html[data-theme="sakura"] .favorite-option,
+html[data-theme="sakura"] .settings-form-card input,
+html[data-theme="sakura"] .settings-form-card textarea,
+html[data-theme="sakura"] .settings-form-card select {
+  background:#402b39!important;color:#f6eaf0!important;border-color:rgba(218,157,177,.34)!important;
+}
+html[data-theme="sakura"] .profile-meta-label { color:#d9b9c7!important; }
+html[data-theme="sakura"] .profile-meta-value { color:#fff1f5!important; }
+html[data-theme="sakura"] .profile-actions .button--primary { background:#e29ab1!important;color:#321c29!important; }
+html[data-theme="sakura"] .profile-actions .button--ghost { background:rgba(64,43,57,.95)!important;color:#f6eaf0!important;border-color:#a96d86!important; }
+
+/* Cozy is the only deliberately light palette: use dark ink on every pale surface. */
+html[data-theme="cozy"] {
+  color-scheme:light;
+  --theme-bg:#e9e0cf;--theme-panel:rgba(248,243,231,.97);--theme-card:#f5eddd;
+  --theme-line:rgba(79,76,54,.23);--theme-text:#282a20;--theme-muted:#666b58;
+  --theme-accent:#648b38;--gc-primary-text:#fffdf5;--gc-control-bg:#f8f2e5;
+}
+html[data-theme="cozy"] .profile-card,
+html[data-theme="cozy"] .auth-card,
+html[data-theme="cozy"] .settings-form-card { background:rgba(248,243,231,.96)!important; }
+html[data-theme="cozy"] .profile-meta,
+html[data-theme="cozy"] .favorite-option,
+html[data-theme="cozy"] .settings-form-card input,
+html[data-theme="cozy"] .settings-form-card textarea,
+html[data-theme="cozy"] .settings-form-card select {
+  color:#282a20!important;background:#f8f2e5!important;border-color:rgba(79,76,54,.23)!important;
+}
+html[data-theme="cozy"] .profile-meta-label { color:#62684f!important; }
+html[data-theme="cozy"] .profile-meta-value { color:#282a20!important; }
+html[data-theme="cozy"] .button--ghost,
+html[data-theme="cozy"] .button--secondary { color:#303525!important;background:#f8f2e5!important;border-color:#9ca887!important; }
+html[data-theme="cozy"] .button--primary { color:#fff!important;background:#648b38!important; }
+
+/* Explicitly keep secondary action controls legible on every dark theme. */
+html[data-theme="arcade"] .button--ghost,html[data-theme="vivid"] .button--ghost,
+html[data-theme="minimal"] .button--ghost,html[data-theme="fantasy"] .button--ghost,
+html[data-theme="cyberpunk"] .button--ghost,html[data-theme="nature"] .button--ghost,
+html[data-theme="classic"] .button--ghost,html[data-theme="dynamic"] .button--ghost {
+  color:var(--theme-text)!important;border-color:var(--theme-line)!important;
+  background:rgba(8,12,20,.42)!important;
+}
