@@ -1,4 +1,5 @@
 import { auth } from "./auth.js";
+import { supabase } from "./supabase.js";
 import { storage, createId } from "./storage.js";
 import { GAMES, getGameById } from "./games.js";
 import { renderRoomChat, addRoomSystemMessage } from "./chat.js";
@@ -681,11 +682,18 @@ function readableRuleSettings(room) {
 
 let roomRenderSequence = 0;
 let activeChessCleanup = null;
+let activeRoomChannel = null;
+
+function stopRoomRealtime() {
+  if (activeRoomChannel) supabase.removeChannel(activeRoomChannel);
+  activeRoomChannel = null;
+}
 
 async function renderRoom(container, roomId, user, inviteCode = "", renderSequence = roomRenderSequence) {
   if (renderSequence === roomRenderSequence) {
     activeChessCleanup?.();
     activeChessCleanup = null;
+    stopRoomRealtime();
   }
   await ensurePublicProfile(user);
   if (renderSequence !== roomRenderSequence) return;
@@ -872,8 +880,25 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
     }
   }
 
+  let refreshQueued = false;
+  const refreshRoom = () => {
+    if (refreshQueued || renderSequence !== roomRenderSequence) return;
+    refreshQueued = true;
+    Promise.resolve().then(() => {
+      refreshQueued = false;
+      if (renderSequence === roomRenderSequence) {
+        renderRoom(container, room.id, user, "", renderSequence).catch((error) => notify(error.message, "error"));
+      }
+    });
+  };
+  activeRoomChannel = supabase.channel(`club-room-view-${room.id}`)
+    .on("postgres_changes", { event: "*", schema: "public", table: "club_room_members", filter: `room_id=eq.${room.id}` }, refreshRoom)
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "club_rooms", filter: `id=eq.${room.id}` }, refreshRoom)
+    .subscribe();
+
   container.querySelector("#room-join")?.addEventListener("click", async () => {
     try {
+      stopRoomRealtime();
       await joinOnlineRoom(room.id);
       notify("Добро пожаловать за стол!");
       renderRoom(container, room.id, user);
@@ -884,6 +909,7 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
 
   container.querySelector("#room-leave")?.addEventListener("click", async () => {
     try {
+      stopRoomRealtime();
       await leaveOnlineRoom(room.id);
       notify("Ты покинул комнату.");
       go("#/rooms");
@@ -893,6 +919,7 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
   container.querySelector("#room-start")?.addEventListener("click", async (event) => {
     const button = event.currentTarget;
     const started = await runRoomAction(button, async () => {
+      stopRoomRealtime();
       await startOnlineChessGame(room);
       await renderRoom(container, room.id, user, "", renderSequence);
     }, "Шахматная партия создана.");
@@ -907,6 +934,7 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
     });
     if (!accepted) return;
     await runRoomAction(event.currentTarget, async () => {
+      stopRoomRealtime();
       await setOnlineRoomStatus(room.id, "open");
       await renderRoom(container, room.id, user);
     }, "Партия завершена. Комната снова в лобби.");
@@ -921,6 +949,7 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
     });
     if (!accepted) return;
     await runRoomAction(event.currentTarget, async () => {
+      stopRoomRealtime();
       await setOnlineRoomStatus(room.id, "closed");
       await renderRoom(container, room.id, user);
     }, "Комната завершена.");
@@ -942,6 +971,7 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
     });
     if (!accepted) return;
     const deleted = await runRoomAction(event.currentTarget, async () => {
+      stopRoomRealtime();
       await deleteOnlineRoom(room.id);
       go("#/rooms");
     }, "Комната удалена.");
@@ -951,6 +981,7 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
   container.querySelectorAll("[data-kick]").forEach((button) => {
     button.addEventListener("click", async () => {
       try {
+        stopRoomRealtime();
         await removeOnlineRoomMember(room.id, button.dataset.kick);
         notify("Игрок удалён из комнаты.");
         await renderRoom(container, room.id, user);
@@ -973,10 +1004,12 @@ export function renderRooms(container, route = "/rooms") {
   const renderSequence = ++roomRenderSequence;
   activeChessCleanup?.();
   activeChessCleanup = null;
+  stopRoomRealtime();
   const cleanup = () => {
     if (renderSequence === roomRenderSequence) roomRenderSequence += 1;
     activeChessCleanup?.();
     activeChessCleanup = null;
+    stopRoomRealtime();
   };
   ensureStyles();
   const user = getCurrentUser();
