@@ -26,3 +26,41 @@
 .game-table__head h2,.game-table__title { font-family:'DM Serif Display',Georgia,serif;font-weight:400;letter-spacing:0; }
 .game-table__surface { border-color:rgba(236,231,216,.12);border-radius:8px;background:#171a15; }
 .game-table__aside>* { border-color:rgba(236,231,216,.1);border-radius:7px;background:#171a15; }
+
+
+/* Expanded table presentation for games with large boards and shared play areas. */
+.room-detail-page--wide-game .game-table {
+  padding: clamp(20px, 3vw, 38px);
+  border-radius: 14px;
+}
+.room-detail-page--wide-game .game-table__head h2 {
+  font-size: clamp(22px, 2vw, 30px);
+}
+.room-detail-page--wide-game .game-table__head p {
+  max-width: 760px;
+  font-size: 12px;
+}
+.room-detail-page--wide-game .game-table__surface {
+  min-height: clamp(320px, 42vw, 620px);
+  padding: clamp(20px, 4vw, 48px);
+}
+.room-detail-page--wide-game .game-table__player-list {
+  gap: 10px;
+}
+.room-detail-page--wide-game .game-table__player {
+  padding: 11px;
+}
+.room-detail-page--wide-game .game-table__player strong,
+.room-detail-page--wide-game .game-table__facts b,
+.room-detail-page--wide-game .game-table__facts span,
+.room-detail-page--wide-game .game-table__panel li {
+  font-size: 11px;
+}
+.room-detail-page--wide-game .game-table__section-head {
+  font-size: 10px;
+}
+@media (max-width: 760px) {
+  .room-detail-page--wide-game .game-table__surface {
+    min-height: 260px;
+  }
+}
