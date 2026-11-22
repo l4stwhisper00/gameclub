@@ -11,7 +11,7 @@ export interface MonopolyProperty {
   ownerId: string | null; houses: number; mortgaged: boolean;
 }
 export interface MonopolyState {
-  gameId: "monopoly"; status: "active" | "finished"; players: MonopolyPlayer[];
+  gameId: "monopoly"; status: "active" | "finished"; hostId: string; players: MonopolyPlayer[];
   board: MonopolySpace[]; properties: Record<number, MonopolyProperty>;
   currentPlayerIndex: number; phase: "roll" | "purchase" | "jail" | "finished";
   pendingSpace: number | null; lastDice: [number, number] | null; doublesCount: number;
@@ -27,7 +27,8 @@ export type MonopolyAction =
   | { type: "roll_jail" }
   | { type: "build_house"; spaceIndex: number }
   | { type: "mortgage"; spaceIndex: number }
-  | { type: "redeem"; spaceIndex: number };
+  | { type: "redeem"; spaceIndex: number }
+  | { type: "end_game" };
 
 const BOARD: MonopolySpace[] = [
   {index:0,name:"Старт",type:"go"},
@@ -215,11 +216,11 @@ function movePlayer(state: MonopolyState, player: MonopolyPlayer, steps: number,
   if (player.position < previous) player.cash += 200;
   resolveLanding(state, player, steps, isDouble, random);
 }
-export function startMonopoly(playerIds: string[]): MonopolyState {
+export function startMonopoly(playerIds: string[], hostId: string = playerIds[0]): MonopolyState {
   if (playerIds.length < 2 || playerIds.length > 6) throw new Error("Для Монополии нужно от 2 до 6 игроков.");
-  if (new Set(playerIds).size !== playerIds.length || playerIds.some((id) => !id)) throw new Error("Список игроков некорректен.");
+  if (new Set(playerIds).size !== playerIds.length || playerIds.some((id) => !id) || !playerIds.includes(hostId)) throw new Error("Список игроков некорректен.");
   return {
-    gameId:"monopoly",status:"active",players:playerIds.map((id)=>({id,cash:1500,position:0,jailed:false,jailTurns:0,jailCards:0,bankrupt:false})),
+    gameId:"monopoly",status:"active",hostId,players:playerIds.map((id)=>({id,cash:1500,position:0,jailed:false,jailTurns:0,jailCards:0,bankrupt:false})),
     board:BOARD.map((space)=>({...space})),
     properties:Object.fromEntries(BOARD.filter((space)=>["property","railroad","utility"].includes(space.type)).map((space)=>[space.index,{ownerId:null,houses:0,mortgaged:false}])),
     currentPlayerIndex:0,phase:"roll",pendingSpace:null,lastDice:null,doublesCount:0,chanceIndex:0,communityIndex:0,winnerId:null,lastEvent:"Партия началась. Первый игрок бросает кубики."
@@ -228,6 +229,11 @@ export function startMonopoly(playerIds: string[]): MonopolyState {
 export function applyMonopolyAction(source: MonopolyState, playerId: string, action: MonopolyAction, random:()=>number=Math.random): MonopolyState {
   const state=structuredClone(source);
   if(state.status!=="active") throw new Error("Партия завершена.");
+  if(action.type==="end_game") {
+    if(playerId!==state.hostId) throw new Error("Завершить партию может только ведущий.");
+    state.status="finished";state.phase="finished";state.winnerId=null;state.lastEvent="Ведущий завершил партию.";
+    return state;
+  }
   const player=current(state);
   if(player.id!==playerId||player.bankrupt) throw new Error("Сейчас ход другого игрока.");
   if(action.type==="roll") {
