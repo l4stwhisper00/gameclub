@@ -22,7 +22,7 @@ Deno.test("roles and mafia teammates are private", () => {
 });
 
 Deno.test("mafia votes only for a living non-mafia player", () => {
-  const state = startMafia(["a","b","c","d","e"], () => 0.5);
+  const state = startMafia(["a","b","c","d","e","f","g","h"], () => 0.5);
   const mafia = playersWithRole(state, "mafia")[0];
   const civilian = playersWithRole(state, "civilian")[0];
   const otherMafia = playersWithRole(state, "mafia")[1];
