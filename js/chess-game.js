@@ -29,10 +29,12 @@ async function invokeChess(body) {
 
 export async function startOnlineChessGame(room) {
   const rules = room.rules?.game || {};
+  const opponentMode = rules.opponentMode === "bot"
+    || (!rules.opponentMode && (room.members || []).length === 1) ? "bot" : "human";
   return invokeChess({
     action: "start",
     room_id: room.id,
-    opponent_mode: rules.opponentMode === "bot" ? "bot" : "human",
+    opponent_mode: opponentMode,
     bot_difficulty: rules.botDifficulty || "medium"
   });
 }
