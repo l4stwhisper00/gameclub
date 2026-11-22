@@ -92,7 +92,7 @@ function renderLogin() {
     mode: "login",
     eyebrow: "РАДЫ СНОВА ТЕБЯ ВИДЕТЬ",
     title: 'Вернись за<br><span class="gradient-text">игровой стол.</span>',
-    subtitle: "Здесь собираются команды, рождаются легенды и каждый бросок кубика меняет ход истории.",
+    subtitle: "Собирай компанию, выбирай настольные игры и проводи время вместе — без лишней подготовки.",
     submitLabel: "Войти в клуб",
     switchText: "Впервые у нас?",
     switchHref: "#/register",
@@ -216,7 +216,7 @@ function renderProfile() {
   app.innerHTML = `
     <section class="profile-wrap page-enter">
       <div class="profile-head">
-        <div><span class="eyebrow">ЛИЧНЫЙ КАБИНЕТ</span><h1 class="display-title">Твоё место<br><span class="gradient-text">в таверне.</span></h1></div>
+        <div><span class="eyebrow">ЛИЧНЫЙ КАБИНЕТ</span><h1 class="display-title">Твоё место<br><span class="gradient-text">в GameClub.</span></h1></div>
         <div class="profile-actions">
           <a class="button button--ghost button--small" href="${publicUrl}">Публичная страница ↗</a>
           <a class="button button--primary button--small" href="#/settings">Настроить профиль <span>✧</span></a>
