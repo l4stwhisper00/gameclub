@@ -35,3 +35,10 @@ Deno.test("hitting a blot sends the opponent checker to the bar",()=>{
  assertEquals(state.bar.black,1);
  assertEquals(state.board[22].owner,"white");
 });
+
+Deno.test("legal moves preserve the ability to use both dice when possible",()=>{
+ const state=startBackgammon(["w","b"]);state.phase="move";state.dice=[1,2];
+ const moves=getLegalBackgammonMoves(state);
+ assertEquals(moves.length>0,true);
+ for(const move of moves){const next=applyBackgammonAction(state,"w",{type:"move",...move});assertEquals(next.phase,"move");}
+});
