@@ -91,3 +91,47 @@ html[data-theme] .chat-send-button:hover { filter:brightness(1.08);box-shadow:0 
 html[data-theme] .room-chat__locked { color:var(--theme-muted);border-color:var(--theme-line);background:var(--theme-card); }
 html[data-theme] .room-chat__locked span { color:var(--theme-accent); }
 html[data-theme="sakura"] .room-chat { background:linear-gradient(145deg,#422b3b,#2c1d29); }
+
+
+/* Hard-scoped theme skin. chat.css is lazy-loaded after navigation, so its
+   selectors must override the legacy fixed-color declarations above. */
+:root[data-theme] .room-chat {
+  color:var(--theme-text)!important;
+  border:1px solid var(--theme-line)!important;
+  border-radius:18px!important;
+  background:linear-gradient(145deg,var(--theme-panel),color-mix(in srgb,var(--theme-bg) 78%,var(--theme-panel)))!important;
+  box-shadow:0 22px 60px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.035)!important;
+}
+:root[data-theme] .room-chat__header,
+:root[data-theme] .room-chat__online,
+:root[data-theme] .room-chat__composer { border-color:var(--theme-line)!important; }
+:root[data-theme] .room-chat__header { background:linear-gradient(90deg,color-mix(in srgb,var(--theme-accent) 10%,transparent),transparent 72%)!important; }
+:root[data-theme] .room-chat__title h2,
+:root[data-theme] .chat-message__body p { color:var(--theme-text)!important; }
+:root[data-theme] .room-chat__icon,
+:root[data-theme] .chat-system-message__spark,
+:root[data-theme] .chat-empty-history span,
+:root[data-theme] .chat-composer__spark { color:var(--theme-accent)!important;border-color:var(--theme-line)!important;background:color-mix(in srgb,var(--theme-accent) 13%,var(--theme-panel))!important; }
+:root[data-theme] .room-chat__secure { color:var(--theme-accent)!important;border-color:var(--theme-line)!important;background:color-mix(in srgb,var(--theme-accent) 9%,var(--theme-panel))!important; }
+:root[data-theme] .chat-online-label,
+:root[data-theme] .chat-online-user,
+:root[data-theme] .chat-online-empty,
+:root[data-theme] .chat-loading,
+:root[data-theme] .chat-empty-history,
+:root[data-theme] .chat-system-message,
+:root[data-theme] .chat-message__meta time,
+:root[data-theme] .chat-composer__counter,
+:root[data-theme] .room-chat__hint { color:var(--theme-muted)!important; }
+:root[data-theme] .chat-avatar { border-color:var(--theme-line)!important;background:linear-gradient(135deg,var(--theme-accent),var(--theme-card))!important;color:var(--theme-text)!important; }
+:root[data-theme] .chat-message__body { color:var(--theme-text)!important;border-color:var(--theme-line)!important;background:color-mix(in srgb,var(--theme-card) 92%,transparent)!important; }
+:root[data-theme] .chat-message--own .chat-message__body { border-color:color-mix(in srgb,var(--theme-accent) 42%,var(--theme-line))!important;background:linear-gradient(135deg,color-mix(in srgb,var(--theme-accent) 22%,var(--theme-panel)),var(--theme-card))!important; }
+:root[data-theme] .chat-message__meta strong { color:var(--theme-accent)!important; }
+:root[data-theme] .chat-composer__field { border-color:var(--theme-line)!important;background:color-mix(in srgb,var(--theme-bg) 82%,var(--theme-panel))!important; }
+:root[data-theme] .chat-composer__field:focus-within { border-color:var(--theme-accent)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--theme-accent) 17%,transparent)!important; }
+:root[data-theme] .chat-composer__field textarea { color:var(--theme-text)!important;background:transparent!important; }
+:root[data-theme] .chat-composer__field textarea::placeholder { color:var(--theme-muted)!important; }
+:root[data-theme] .chat-send-button { color:#101510!important;border-color:color-mix(in srgb,var(--theme-accent) 82%,white)!important;background:linear-gradient(135deg,var(--theme-accent),color-mix(in srgb,var(--theme-accent) 72%,white))!important;box-shadow:0 8px 24px color-mix(in srgb,var(--theme-accent) 24%,transparent)!important; }
+:root[data-theme] .chat-send-button:hover { filter:brightness(1.1)!important;transform:translateY(-2px); }
+:root[data-theme] .room-chat__locked { color:var(--theme-muted)!important;border-color:var(--theme-line)!important;background:var(--theme-card)!important; }
+:root[data-theme] .room-chat__locked span { color:var(--theme-accent)!important; }
+:root[data-theme="sakura"] .room-chat { background:linear-gradient(145deg,#422b3b,#2c1d29)!important; }
