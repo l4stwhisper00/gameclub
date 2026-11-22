@@ -35,7 +35,7 @@ function asSession(data: unknown): { game_id: string; public_state: Record<strin
 }
 
 async function loadSession(admin: any, roomId: string) {
-  const { data, error } = await admin.rpc("club_load_game_session", { p_room_id: roomId });
+  const { data, error } = await (admin.rpc as any)("club_load_game_session", { p_room_id: roomId });
   if (error) throw new HttpError(500, "Не удалось загрузить состояние партии.");
   return asSession(data);
 }
@@ -48,7 +48,7 @@ async function commitSession(
   state: UnoState,
   start = false
 ): Promise<number> {
-  const { data, error } = await admin.rpc("club_commit_game_session", {
+  const { data, error } = await (admin.rpc as any)("club_commit_game_session", {
     p_room_id: roomId,
     p_game_id: "uno",
     p_expected_revision: expectedRevision,
@@ -110,7 +110,7 @@ Deno.serve(async (req: Request) => {
       const { data: members, error: membersError } = await admin
         .from("club_room_members").select("user_id").eq("room_id", roomId);
       if (membersError) throw new HttpError(500, "Не удалось загрузить участников.");
-      const playerIds = (members || []).map((member) => member.user_id);
+      const playerIds = (members || []).map((member: { user_id: string }) => member.user_id);
       if (playerIds.length < 2 || playerIds.length > 10) throw new HttpError(400, "Для Уно нужно от 2 до 10 участников.");
 
       const existing = await loadSession(admin, roomId);
