@@ -513,3 +513,48 @@ html[data-theme="sakura"] .room-panel .room-rules-list .room-rule-row {
     flex-basis:48%;
   }
 }
+
+
+/* Spacious play area for tabletop games; chess intentionally keeps its compact board. */
+.room-detail-page--wide-game {
+  width: min(1680px, calc(100vw - 48px));
+  max-width: none;
+}
+.room-detail-page--wide-game .room-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 18px;
+}
+.room-detail-page--wide-game .room-detail-main {
+  display: contents;
+}
+.room-detail-page--wide-game #room-game-mount {
+  grid-column: 1 / -1;
+  min-width: 0;
+  width: 100%;
+}
+.room-detail-page--wide-game .room-detail-main > .room-panel {
+  min-width: 0;
+}
+.room-detail-page--wide-game .room-detail-aside {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+.room-detail-page--wide-game .game-table {
+  width: 100%;
+}
+@media (max-width: 760px) {
+  .room-detail-page--wide-game {
+    width: min(100% - 24px, 1680px);
+  }
+  .room-detail-page--wide-game .room-detail-grid,
+  .room-detail-page--wide-game .room-detail-aside {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .room-detail-page--wide-game .room-detail-aside {
+    grid-column: 1;
+  }
+}
