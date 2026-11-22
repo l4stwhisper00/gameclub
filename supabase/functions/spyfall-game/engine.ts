@@ -39,7 +39,7 @@ function shuffle<T>(items:T[],random:()=>number):T[]{
   return result;
 }
 export function startSpyfall(playerIds:string[],hostId:string,random:()=>number=Math.random):SpyfallState{
-  if(playerIds.length<3||playerIds.length>12)throw new Error("Для Spyfall нужно от 3 до 12 игроков.");
+  if(playerIds.length<3||playerIds.length>8)throw new Error("Для Spyfall нужно от 3 до 12 игроков.");
   if(new Set(playerIds).size!==playerIds.length||playerIds.some((id)=>!id)||!playerIds.includes(hostId))throw new Error("Список игроков некорректен.");
   const location=LOCATIONS[Math.floor(random()*LOCATIONS.length)];
   const spyId=playerIds[Math.floor(random()*playerIds.length)];
