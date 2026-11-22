@@ -103,7 +103,7 @@ export function applyBunkerAction(source:BunkerState,playerId:string,action:Bunk
         state.status="finished";state.phase="finished";state.winnerIds=alive(state).map((item)=>item.id);
         state.lastEvent="Бункер заполнен. Выжившие определены.";
       }else{
-        state.round+=1;state.phase="reveal";state.revealOrder=shuffle(alive(state).map((item)=>item.id),()=>0.5);
+        state.round+=1;state.phase="reveal";state.revealOrder=alive(state).map((item)=>item.id);
         state.currentRevealIndex=0;state.votes={};
         state.lastEvent=eliminatedId?"Участник исключён. Начинается следующий раунд раскрытия.":"Ничья. Никто не исключён; начинается следующий раунд.";
       }
