@@ -234,3 +234,42 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 @media (prefers-reduced-motion:reduce) {
   *,*::before,*::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
 }
+
+
+/* Player game statistics */
+.profile-statistics { margin-top: 18px; }
+.stats-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; }
+.stats-title { margin:10px 0 0; font:600 clamp(19px,3vw,25px) var(--font-display); letter-spacing:-.8px; }
+.stats-total { color:var(--muted); font-size:11px; }
+.stats-summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-top:23px; }
+.stats-metric { display:grid; gap:6px; padding:16px 12px; border:1px solid var(--line); border-radius:14px; background:rgba(255,255,255,.025); }
+.stats-metric strong { font:600 clamp(19px,3vw,27px) var(--font-display); color:#c4b5fd; }
+.stats-metric span { color:var(--muted); font-size:9px; }
+.stats-game-row { display:flex; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid var(--line); }
+.stats-game-row:last-child { border-bottom:0; }
+.stats-game-icon { display:grid; place-items:center; width:39px; height:39px; flex:0 0 auto; border-radius:12px; background:rgba(139,92,246,.12); font-size:19px; }
+.stats-game-info { display:grid; gap:5px; min-width:0; flex:1; }
+.stats-game-info strong,.stats-history-row strong { font-size:11px; }
+.stats-game-info span,.stats-history-row div span { color:var(--muted); font-size:9px; }
+.stats-game-place { display:grid; gap:4px; text-align:right; }
+.stats-game-place strong { font:600 16px var(--font-display); }
+.stats-game-place span { color:var(--muted); font-size:8px; }
+.stats-history { display:grid; }
+.stats-history-row { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); }
+.stats-history-row:last-child { border-bottom:0; }
+.stats-history-row > div { display:grid; gap:5px; flex:1; min-width:0; }
+.stats-place { color:#a9a6ba; font-size:9px; white-space:nowrap; }
+.stats-place.is-win { color:#86efac; }
+.stats-delete { width:26px; height:26px; border:1px solid var(--line); border-radius:8px; color:var(--muted); background:transparent; cursor:pointer; }
+.stats-delete:hover { color:#fda4af; border-color:rgba(251,113,133,.4); }
+.stats-result-form { display:grid; grid-template-columns:minmax(0,2fr) minmax(75px,.7fr) minmax(75px,.7fr) auto; align-items:end; gap:10px; margin-top:14px; }
+.stats-result-form label { display:grid; gap:7px; color:#c9c6dc; font-size:9px; font-weight:800; }
+.stats-result-form input,.stats-result-form select { width:100%; min-width:0; height:42px; padding:0 10px; border:1px solid var(--line); border-radius:10px; color:var(--text); background:#11111e; font:inherit; font-size:11px; }
+.stats-result-form select { text-overflow:ellipsis; }
+@media(max-width:650px) {
+  .stats-summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .stats-result-form { grid-template-columns:1fr 1fr; }
+  .stats-result-form label:first-child { grid-column:1/-1; }
+  .stats-result-form button { grid-column:1/-1; }
+  .stats-history-row { flex-wrap:wrap; }
+}
