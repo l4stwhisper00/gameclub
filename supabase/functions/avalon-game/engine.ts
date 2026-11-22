@@ -95,7 +95,7 @@ export function getAvalonPublicState(state:AvalonState){
  leaderId:currentLeader(state),mission:state.mission,teamSize:state.teamSize,proposal:state.proposal,
  teamVotesCount:Object.keys(state.teamVotes).length,missionVotesCount:Object.keys(state.missionVotes).length,
  missionResults:state.missionResults,rejectedProposals:state.rejectedProposals,winner:state.winner,
- assassinationTarget:state.assassinationTarget,lastEvent:state.lastEvent};
+ assassinationTarget:state.assassinationTarget,lastEvent:state.lastEvent,...(state.status==="finished"?{revealedRoles:state.roles}: {})};
 }
 export function getAvalonPrivateState(state:AvalonState,playerId:string){
  if(!state.players.includes(playerId))throw new Error("Ты не участник партии.");
