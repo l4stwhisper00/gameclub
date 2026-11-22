@@ -38,7 +38,7 @@ async function commitSession(admin: any, roomId: string, userId: string, expecte
 }
 function parseAction(body: Record<string, unknown>): AliasAction {
   const type = String(body.action || "");
-  if (type === "correct" || type === "skip" || type === "end_turn") return { type };
+  if (type === "correct" || type === "skip" || type === "end_turn" || type === "end_game") return { type };
   throw new HttpError(400, "Неизвестное действие.");
 }
 Deno.serve(async (req: Request) => {
@@ -84,7 +84,7 @@ Deno.serve(async (req: Request) => {
       if (playerIds.length < 4 || playerIds.length > 12) throw new HttpError(400, "Для Alias нужно от 4 до 12 игроков.");
       const existing = await loadSession(admin, roomId);
       if (existing?.public_state?.status === "active") throw new HttpError(409, "Партия уже идёт.");
-      const state = startAlias(playerIds);
+      const state = startAlias(playerIds, Math.random, room.host_id);
       const revision = await commitSession(admin, roomId, user.id, existing?.revision ?? -1, state, true);
       return json({ state: getAliasPublicState(state), privateState: getAliasPrivateState(state, user.id), revision });
     }
