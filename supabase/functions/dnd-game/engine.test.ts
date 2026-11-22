@@ -58,3 +58,23 @@ Deno.test("short rest spends hit dice and long rest restores the character", () 
   state = applyDndAction(state, "p2", { type: "rest", kind: "long" });
   assertEquals(state.characters["char-p2"].hp, 28);
 });
+
+Deno.test("initiative skips combatants at zero HP", () => {
+  let state = startDndCampaign(players, "host");
+  state = character(state, "host", "Ариан");
+  state = character(state, "p2", "Лира");
+  state = applyDndAction(state, "host", { type: "add_npc", name: "Гоблин", maxHp: 7, ac: 15, initiativeBonus: 2 });
+  const npcId = Object.keys(state.npcs)[0];
+  state = applyDndAction(state, "host", { type: "start_combat" }, () => 0.5);
+  state.turnOrder = ["char-host", "char-p2", npcId];
+  state.currentTurnIndex = 0;
+  state.characters["char-p2"].hp = 0;
+  state = applyDndAction(state, "host", { type: "next_turn" });
+  assertEquals(state.turnOrder[state.currentTurnIndex], npcId);
+});
+Deno.test("rest is not available during combat", () => {
+  let state = startDndCampaign(players, "host");
+  state = character(state, "p2", "Лира");
+  state.combatActive = true;
+  assertThrows(() => applyDndAction(state, "p2", { type: "rest", kind: "long" }));
+});
