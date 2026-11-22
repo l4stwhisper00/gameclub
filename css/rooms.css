@@ -302,3 +302,11 @@
   .chess-square > small { font-size:6px; }
   .chess-board { border-width:3px; border-radius:7px; }
 }
+
+.chess-promotion-dialog { width:min(320px,calc(100% - 28px)); padding:20px; border:1px solid rgba(196,181,253,.25); border-radius:16px; color:#eeeaff; background:#19172a; box-shadow:0 25px 80px rgba(0,0,0,.65); }
+.chess-promotion-dialog::backdrop { background:rgba(4,4,12,.78); backdrop-filter:blur(6px); }
+.chess-promotion-dialog p { margin:0 0 14px; color:#cfc9e4; font:600 12px var(--font-display); }
+.chess-promotion-dialog__choices { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.chess-promotion-dialog__choices button { aspect-ratio:1; border:1px solid rgba(255,255,255,.1); border-radius:10px; color:#f4ead5; background:rgba(255,255,255,.06); cursor:pointer; font:34px "Segoe UI Symbol",serif; }
+.chess-promotion-dialog__choices button:hover { border-color:#a78bfa; background:rgba(139,92,246,.18); }
+.chess-promotion-dialog__cancel { margin-top:12px; padding:7px 10px; border:0; color:#a9a4ba; background:transparent; cursor:pointer; font-size:9px; }
