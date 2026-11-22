@@ -1,0 +1,26 @@
+name: D&D campaign engine tests
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/dnd-game/**"
+      - ".github/workflows/dnd-engine-tests.yml"
+  push:
+    branches:
+      - supabase-integration
+    paths:
+      - "supabase/functions/dnd-game/**"
+      - ".github/workflows/dnd-engine-tests.yml"
+
+jobs:
+  dnd-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check Edge Function
+        run: deno check supabase/functions/dnd-game/index.ts
+      - name: Run D&D rules tests
+        run: deno test supabase/functions/dnd-game/engine.test.ts
