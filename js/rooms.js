@@ -187,6 +187,7 @@ function roomCard(room, user) {
   const full = count >= room.maxPlayers;
   const canJoin = !member && room.visibility === "public" && room.status === "open" && !full;
   const [tone, glow] = game.palette;
+  const isLargeGame = ["dnd-5e","monopoly","catan","carcassonne","ticket-to-ride","backgammon","munchkin"].includes(game.id);
   return `
     <article class="room-card" style="--room-tone:${tone};--room-glow:${glow}">
       <div class="room-card__banner pattern-${escapeHTML(game.pattern)}">
@@ -800,7 +801,7 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
   const [tone, glow] = game.palette;
 
   container.innerHTML = `
-    <section class="room-detail-page page-enter" style="--room-tone:${tone};--room-glow:${glow}">
+    <section class="room-detail-page page-enter ${isLargeGame ? "room-detail-page--large-game" : ""}" style="--room-tone:${tone};--room-glow:${glow}">
       <a class="room-back-link" href="#/rooms">← Все комнаты</a>
       <header class="room-detail-hero pattern-${escapeHTML(game.pattern)}">
         <div class="room-detail-hero__glow"></div>
