@@ -34,7 +34,7 @@ export function renderAliasGame(container,room,user){
     if(state.status==="finished"){
       controls='<div class="alias-winner"><span>✦</span><strong>Победила '+teamName(state.winnerTeam)+'</strong><p>Команда первой набрала '+state.scoreToWin+' очков.</p></div>';
     }else if(myTurn){
-      controls='<div class="alias-word-card"><span>СЛОВО ДЛЯ ОБЪЯСНЕНИЯ</span><strong>'+escapeHTML(privateState.word||"Слово загружается…")+'</strong><small>Не называй слово и однокоренные слова. Объясняй жестами и ассоциациями нельзя.</small></div><div class="alias-actions"><button type="button" data-alias-action="correct" '+(busy?"disabled":"")+'>✓ Угадали</button><button type="button" data-alias-action="skip" '+(busy?"disabled":"")+'>Пропустить</button><button type="button" data-alias-action="end_turn" '+(busy?"disabled":"")+'>Закончить ход</button></div>';
+      controls='<div class="alias-word-card"><span>СЛОВО ДЛЯ ОБЪЯСНЕНИЯ</span><strong>'+escapeHTML(privateState.word||"Слово загружается…")+'</strong><small>Не называй слово, его части или однокоренные формы; нельзя показывать жестами или переводить.</small></div><div class="alias-actions"><button type="button" data-alias-action="correct" '+(busy?"disabled":"")+'>✓ Угадали</button><button type="button" data-alias-action="skip" '+(busy?"disabled":"")+'>Пропустить</button><button type="button" data-alias-action="end_turn" '+(busy?"disabled":"")+'>Закончить ход</button></div>';
     }else{
       controls='<div class="alias-wait"><span>СЕЙЧАС ОБЪЯСНЯЕТ</span><strong>'+escapeHTML(playerName(state.currentExplainerId))+'</strong><p>Команда '+teamName(state.currentTeam)+' объясняет слова. Помогай своей команде угадывать.</p></div>';
     }
