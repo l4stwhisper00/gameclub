@@ -77,10 +77,11 @@ export function renderUnoGame(container, room, user) {
       </button>`).join("");
     const opponentMarkup = players.filter((player) => player.id !== user.id).map((player) => {
       const isCurrent = player.id === currentPlayerId;
-      const label = player.id === room.hostId ? "Ведущий" : "Игрок";
+      const member = (room.members || []).find((entry) => entry.userId === player.id);
+      const username = member?.user?.username || (player.id === room.hostId ? "Ведущий" : "Игрок");
       return `<div class="uno-opponent ${isCurrent ? "is-current" : ""}">
-        <span class="uno-opponent__avatar">${escapeHTML((player.username || player.id.slice(0, 1)).slice(0, 1).toUpperCase())}</span>
-        <span class="uno-opponent__name">${escapeHTML(player.username || label)}</span>
+        <span class="uno-opponent__avatar">${escapeHTML(username.slice(0, 1).toUpperCase())}</span>
+        <span class="uno-opponent__name">${escapeHTML(username)}</span>
         <span class="uno-opponent__count">${player.cardCount} карт</span>
         <span class="uno-opponent__backs" aria-hidden="true">${Array.from({ length: Math.min(player.cardCount, 5) }, () => '<i></i>').join("")}</span>
       </div>`;
@@ -182,7 +183,7 @@ export function renderUnoGame(container, room, user) {
     }
   };
 
-  container.addEventListener("click", async (event) => {
+  const handleClick = async (event) => {
     const cardButton = event.target.closest("[data-uno-card]");
     if (cardButton && container.contains(cardButton)) {
       const card = hand.find((item) => item.id === cardButton.dataset.unoCard);
@@ -199,7 +200,8 @@ export function renderUnoGame(container, room, user) {
     if (actionButton && container.contains(actionButton)) {
       await sendAction({ action: actionButton.dataset.unoAction });
     }
-  });
+  };
+  container.addEventListener("click", handleClick);
 
   channel = supabase.channel(`uno-session-${room.id}`)
     .on("postgres_changes", {
@@ -210,7 +212,7 @@ export function renderUnoGame(container, room, user) {
   loadState();
   return () => {
     disposed = true;
-    container.removeEventListener("click", () => {});
+    container.removeEventListener("click", handleClick);
     if (channel) supabase.removeChannel(channel);
   };
 }
