@@ -1,0 +1,26 @@
+name: Spyfall engine tests
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/spyfall-game/**"
+      - ".github/workflows/spyfall-engine-tests.yml"
+  push:
+    branches:
+      - supabase-integration
+    paths:
+      - "supabase/functions/spyfall-game/**"
+      - ".github/workflows/spyfall-engine-tests.yml"
+
+jobs:
+  spyfall-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check Edge Function
+        run: deno check supabase/functions/spyfall-game/index.ts
+      - name: Run Spyfall rules tests
+        run: deno test supabase/functions/spyfall-game/engine.test.ts
