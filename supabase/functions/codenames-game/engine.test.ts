@@ -37,7 +37,7 @@ Deno.test("operative can guess own agent and continue until clue limit", () => {
   assertEquals(next.remaining[team], state.remaining[team] - 1);
 });
 Deno.test("assassin immediately awards victory to the opposing team", () => {
-  const state = startCodenames(["red-cap", "blue-cap", "red-op"], () => 0.6);
+  const state = startCodenames(["red-cap", "blue-cap", "red-op", "blue-op"], () => 0.6);
   const team = state.currentTeam;
   const operative = state.players.find((id) => state.teams[id] === team && id !== state.captains[team])!;
   let next = applyCodenamesAction(state, state.captains[team], { type: "clue", text: "Риск", count: 1 });
