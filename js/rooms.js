@@ -709,6 +709,7 @@ function readableRuleSettings(room) {
 
 let roomRenderSequence = 0;
 let activeChessCleanup = null;
+let activeChatCleanup = null;
 let activeRoomChannel = null;
 
 function stopRoomRealtime() {
@@ -720,6 +721,8 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
   if (renderSequence === roomRenderSequence) {
     activeChessCleanup?.();
     activeChessCleanup = null;
+    activeChatCleanup?.();
+    activeChatCleanup = null;
     stopRoomRealtime();
   }
   await ensurePublicProfile(user);
@@ -898,7 +901,7 @@ async function renderRoom(container, roomId, user, inviteCode = "", renderSequen
   });
 
   const chatMount = container.querySelector("#room-chat-mount");
-  if (chatMount) renderRoomChat(chatMount, room, user);
+  if (chatMount) activeChatCleanup = renderRoomChat(chatMount, room, user);
   const gameMount = container.querySelector("#room-game-mount");
   if (game.id === "chess" && room.status === "playing" && gameMount) {
     const cleanup = await renderChessGame(gameMount, room, user);
@@ -1029,11 +1032,15 @@ export function renderRooms(container, route = "/rooms") {
   const renderSequence = ++roomRenderSequence;
   activeChessCleanup?.();
   activeChessCleanup = null;
+  activeChatCleanup?.();
+  activeChatCleanup = null;
   stopRoomRealtime();
   const cleanup = () => {
     if (renderSequence === roomRenderSequence) roomRenderSequence += 1;
     activeChessCleanup?.();
     activeChessCleanup = null;
+    activeChatCleanup?.();
+    activeChatCleanup = null;
     stopRoomRealtime();
   };
   ensureStyles();
