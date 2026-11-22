@@ -46,7 +46,7 @@ export function renderMafiaGame(container, room, user) {
     civilian: "Обсуждай события и помогай городу найти мафию на дневном голосовании."
   };
   const actionButton = (label, target, action, disabled = false) =>
-    '<button class="mafia-target" type="button" data-mafia-action="' + action + '" data-mafia-target="' + escapeHTML(target.id) + '" ' + (disabled || busy ? "disabled" : "") + '><span>' + escapeHTML(playerName(target.id)) + '</span><small>' + (target.revealedRole ? escapeHTML(roleNames[target.revealedRole]) : "ЖИВ") + '</small></button>';
+    '<button class="mafia-target" type="button" data-mafia-action="' + action + '" data-mafia-target="' + escapeHTML(target.id) + '" ' + (disabled || busy ? "disabled" : "") + '><span>' + escapeHTML(playerName(target.id)) + '</span><small>' + escapeHTML(label) + '</small></button>';
 
   const render = () => {
     if (disposed) return;
@@ -82,7 +82,7 @@ export function renderMafiaGame(container, room, user) {
       phasePanel = '<div class="mafia-wait-panel"><strong>Ты выбыл из игры</strong><p>Наблюдай за партией. Твоя роль раскрыта, но секреты оставшихся игроков сохраняются.</p></div>';
     } else if (state.phase === "night_mafia") {
       phasePanel = role === "mafia"
-        ? '<div class="mafia-phase-copy"><span>НОЧЬ · МАФИЯ</span><h3>Выбери цель</h3><p>Команда согласует, кого устранить. Твой голос скрыт до завершения выбора.</p></div><div class="mafia-targets">' + living.filter((p) => state.players.find((x) => x.id === p.id)?.revealedRole !== "mafia" && p.id !== user.id && state.players.find((x) => x.id === p.id)?.id && privateState.role === "mafia" && state.players.find((x) => x.id === p.id)?.alive && state.players.find((x) => x.id === p.id)?.id && state.players.find((x) => x.id === p.id)?.id !== user.id && state.players.find((x) => x.id === p.id)?.revealedRole !== "mafia" && state.players.find((x) => x.id === p.id)?.id).map((p) => actionButton("Выбрать", p, "mafia_vote", Boolean(privateState.hasMafiaVoted))).join("") + '</div><p class="mafia-notice">' + (privateState.hasMafiaVoted ? "Твой голос принят. Ждём остальных участников мафии." : "Голосов мафии: " + state.mafiaVotesCount + " / " + state.mafiaCount) + '</p>'
+        ? '<div class="mafia-phase-copy"><span>НОЧЬ · МАФИЯ</span><h3>Выбери цель</h3><p>Команда согласует, кого устранить. Твой голос скрыт до завершения выбора.</p></div><div class="mafia-targets">' + living.filter((p) => p.id !== user.id && !(privateState.mafiaTeammates || []).includes(p.id)).map((p) => actionButton("Выбрать", p, "mafia_vote", Boolean(privateState.hasMafiaVoted))).join("") + '</div><p class="mafia-notice">' + (privateState.hasMafiaVoted ? "Твой голос принят. Ждём остальных участников мафии." : "Голосов мафии: " + state.mafiaVotesCount + " / " + state.mafiaCount) + '</p>'
         : '<div class="mafia-wait-panel"><strong>Город спит</strong><p>Мафия совещается. Не раскрывай свою роль.</p></div>';
     } else if (state.phase === "night_doctor") {
       phasePanel = role === "doctor"
