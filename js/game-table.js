@@ -43,7 +43,7 @@ export function renderGameTable(container, room, game, user) {
   const tagList = (game.tags || []).slice(0,3).map(tag => `<span>${escapeHTML(tag)}</span>`).join("");
   const mechanics = (game.mechanics || []).map((item,index)=>`<li><i>${String(index+1).padStart(2,"0")}</i>${escapeHTML(item)}</li>`).join("");
   container.innerHTML = `
-    <section class="game-table" style="--gt-tone:${game.palette[0]};--gt-glow:${game.palette[1]}">
+    <section class="game-table ${["dnd-5e","monopoly","catan","carcassonne","ticket-to-ride","backgammon","munchkin"].includes(game.id) ? "game-table--large" : ""} game-table--${escapeHTML(game.id)}" style="--gt-tone:${game.palette[0]};--gt-glow:${game.palette[1]}">
       <header class="game-table__head">
         <div><span class="eyebrow">ИГРОВОЙ СТОЛ · ${escapeHTML(game.category.toUpperCase())}</span><h2>${game.emoji} ${escapeHTML(game.title)}</h2><p>${escapeHTML(game.tagline || game.description)}</p></div>
         <span class="game-table__status"><i></i>${statusLabel}</span>
@@ -60,7 +60,7 @@ export function renderGameTable(container, room, game, user) {
           <section class="game-table__panel"><span class="game-table__section-head">ПАРАМЕТРЫ</span><div class="game-table__facts"><div><span>Формат</span><b>${escapeHTML(rules.roundFormat || "По правилам игры")}</b></div><div><span>Игроки</span><b>${game.minPlayers}–${game.maxPlayers}</b></div><div><span>Длительность</span><b>${escapeHTML(game.duration)}</b></div><div><span>Твоя роль</span><b>${host?"Ведущий":members.some(m=>m.userId===user.id)?"Игрок":"Гость"}</b></div></div></section>
         </aside>
       </div>
-      <footer class="game-table__foot"><span>Интерфейс игрового стола</span><p>Комната, участники, настройки и чат уже работают. Правила и визуальная площадка подготовлены; игровые ходы и раунды для этой игры ещё подключаются — кнопки не будут притворяться работающими.</p></footer>
+      <footer class="game-table__foot"><span>Игровая площадка</span><p>Состояние партии синхронизируется через серверную игровую сессию; демонстрационные элементы пока не являются игровыми ходами.</p></footer>
     </section>`;
   const link = document.getElementById("game-table-styles");
   if (!link) {
