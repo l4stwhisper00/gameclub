@@ -102,7 +102,7 @@ Deno.serve(async (req: Request) => {
         .from("club_room_members").select("user_id").eq("room_id", roomId).order("joined_at", { ascending: true });
       if (membersError) throw new HttpError(500, "Не удалось загрузить участников.");
       const playerIds = (members || []).map((member: { user_id: string }) => member.user_id);
-      if (playerIds.length < 1 || playerIds.length > 8) throw new HttpError(400, "Кампания поддерживает от 1 до 8 участников.");
+      if (playerIds.length < 2 || playerIds.length > 8) throw new HttpError(400, "Кампания поддерживает от 1 до 8 участников.");
       const existing = await loadSession(admin, roomId);
       if (existing?.public_state?.status === "active") throw new HttpError(409, "Кампания уже запущена.");
       const state = startDndCampaign(playerIds, room.host_id);
