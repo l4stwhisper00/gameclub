@@ -352,3 +352,81 @@ body { background:#111310; color:var(--text); }
   .feature-tile:last-child { border-bottom:0; }
   .feature-tile strong { display:inline-block;margin:0 9px 0 0;font-size:20px; }
 }
+
+
+/* Friendly energy pass — keep the craft, lose the velvet-rope mood. */
+:root {
+  --bg:#141916;
+  --panel:#1d2520;
+  --panel-strong:#222c26;
+  --line:rgba(231,241,229,.11);
+  --text:#f1f4ec;
+  --muted:#a9b5a9;
+  --violet:#b9ef72;
+  --cyan:#80d8c5;
+  --amber:#b9ef72;
+  --danger:#ff887e;
+  --radius:16px;
+  --font-body:'DM Sans',sans-serif;
+  --font-display:'DM Sans',sans-serif;
+}
+html,body { background:#141916;color:#f1f4ec; }
+.topbar { background:rgba(20,25,22,.92);border-color:rgba(231,241,229,.09); }
+.brand-mark {
+  width:36px;height:36px;border:0;border-radius:12px;
+  color:#172016;background:#b9ef72;font-weight:800;
+}
+.brand-name { font-weight:800;letter-spacing:.025em; }
+.brand-name span { color:#b9ef72; }
+.nav-link { color:#a9b5a9; }
+.nav-link:hover,.nav-link.active { color:#f1f4ec; }
+.app-shell { padding-top:46px; }
+.eyebrow { color:#b9ef72;letter-spacing:1.2px; }
+.eyebrow::before { background:#b9ef72; }
+.display-title {
+  font-family:'DM Sans',sans-serif;font-weight:800;
+  letter-spacing:-.055em;line-height:1.02;
+}
+.gradient-text { color:#b9ef72;background:none;-webkit-text-fill-color:currentColor; }
+.lead { color:#b0bcb1;line-height:1.75; }
+.button { min-height:48px;border-radius:11px;font-weight:800;letter-spacing:0; }
+.button--primary { color:#172016;background:#b9ef72; }
+.button--primary:hover { color:#172016;background:#cbf995; }
+.button--ghost { border-color:rgba(231,241,229,.16);color:#e6ede4;background:rgba(255,255,255,.025); }
+.button--ghost:hover { border-color:rgba(185,239,114,.48);background:rgba(185,239,114,.08); }
+.home-hero { gap:32px;border-color:var(--line); }
+.home-hero .display-title { font-size:clamp(46px,6.2vw,76px); }
+.hero-glyph {
+  border-color:rgba(185,239,114,.25);
+  background:radial-gradient(circle at 50% 45%,#344638 0,#243229 56%,#1a241e 76%);
+  box-shadow:inset 0 0 0 10px rgba(185,239,114,.035),0 20px 60px rgba(0,0,0,.22);
+}
+.hero-glyph span { filter:none; }
+.hero-ring { border-color:rgba(128,216,197,.2); }
+.feature-tile { background:transparent; }
+.feature-tile strong {
+  color:#e9f2e5;font-family:'DM Sans',sans-serif;font-weight:800;
+  letter-spacing:-.045em;
+}
+.feature-tile span { color:#a9b5a9; }
+.auth-card,.profile-card {
+  border-radius:16px;border-color:var(--line);background:#1d2520;
+  box-shadow:0 16px 42px rgba(0,0,0,.2);
+}
+.auth-card h2,.settings-section-title {
+  font-family:'DM Sans',sans-serif;font-weight:800;letter-spacing:-.04em;
+}
+.form-field label { color:#b9ef72; }
+.form-input,.input-wrap .form-input { border-radius:10px;background:#151c17; }
+.form-input:focus,.input-wrap:focus-within .form-input {
+  border-color:rgba(185,239,114,.7);box-shadow:0 0 0 3px rgba(185,239,114,.1);
+}
+.profile-avatar { border-radius:22px;background:#344638;border-color:rgba(185,239,114,.35); }
+.profile-name { font-family:'DM Sans',sans-serif;font-weight:800;letter-spacing:-.04em; }
+.toast { border-color:rgba(185,239,114,.25);background:#222c26; }
+:where(button,a):focus-visible { outline-color:#b9ef72; }
+:where(input,textarea,select):focus-visible { outline-color:rgba(185,239,114,.8); }
+@media(max-width:760px) {
+  .app-shell { padding-top:30px; }
+  .home-hero .display-title { font-size:clamp(42px,11vw,60px); }
+}
