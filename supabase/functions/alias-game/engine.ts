@@ -1,13 +1,13 @@
 export type AliasTeam = "red" | "blue";
 export interface AliasState {
-  gameId: "alias"; status: "active" | "finished"; players: string[];
+  gameId: "alias"; status: "active" | "finished"; hostId: string; players: string[];
   teams: Record<string, AliasTeam>; teamPlayers: Record<AliasTeam, string[]>;
   scores: Record<AliasTeam, number>; scoreToWin: number;
   words: string[]; wordIndex: number; currentTeam: AliasTeam;
   explainerIndexes: Record<AliasTeam, number>; round: number;
   winnerTeam: AliasTeam | null; lastEvent: string;
 }
-export type AliasAction = { type: "correct" } | { type: "skip" } | { type: "end_turn" };
+export type AliasAction = { type: "correct" } | { type: "skip" } | { type: "end_turn" } | { type: "end_game" };
 const WORDS = [
 "Компас","Парус","Галактика","Кофемашина","Пианино","Вулкан","Лабиринт","Маяк","Снеговик","Самолёт",
 "Карусель","Микроскоп","Подводная лодка","Библиотека","Крокодил","Парашют","Телескоп","Мороженое","Пират","Робот",
@@ -31,14 +31,14 @@ function activeExplainer(state:AliasState):string{
   const members=state.teamPlayers[state.currentTeam];
   return members[state.explainerIndexes[state.currentTeam]%members.length];
 }
-export function startAlias(playerIds:string[],random:()=>number=Math.random):AliasState{
+export function startAlias(playerIds:string[],random:()=>number=Math.random,hostId:string=playerIds[0]):AliasState{
   if(playerIds.length<4||playerIds.length>12)throw new Error("Для Alias нужно от 4 до 12 игроков.");
-  if(new Set(playerIds).size!==playerIds.length||playerIds.some((id)=>!id))throw new Error("Список игроков некорректен.");
+  if(new Set(playerIds).size!==playerIds.length||playerIds.some((id)=>!id)||!playerIds.includes(hostId))throw new Error("Список игроков некорректен.");
   const teams:Record<string,AliasTeam>={};
   const teamPlayers:Record<AliasTeam,string[]>={red:[],blue:[]};
   playerIds.forEach((id,index)=>{const team:AliasTeam=index%2===0?"red":"blue";teams[id]=team;teamPlayers[team].push(id);});
   return {
-    gameId:"alias",status:"active",players:[...playerIds],teams,teamPlayers,scores:{red:0,blue:0},scoreToWin:30,
+    gameId:"alias",status:"active",hostId,players:[...playerIds],teams,teamPlayers,scores:{red:0,blue:0},scoreToWin:30,
     words:shuffle(WORDS,random),wordIndex:0,currentTeam:"red",explainerIndexes:{red:0,blue:0},round:1,
     winnerTeam:null,lastEvent:"Красная команда начинает объяснять слова."
   };
@@ -47,6 +47,11 @@ export function applyAliasAction(source:AliasState,playerId:string,action:AliasA
   const state=structuredClone(source);
   if(state.status!=="active")throw new Error("Партия завершена.");
   if(!state.players.includes(playerId))throw new Error("Ты не участник игры.");
+  if(action.type==="end_game"){
+    if(playerId!==state.hostId)throw new Error("Завершить партию может только ведущий.");
+    state.status="finished";state.winnerTeam=null;state.lastEvent="Ведущий завершил партию.";
+    return state;
+  }
   if(state.teams[playerId]!==state.currentTeam)throw new Error("Сейчас ход другой команды.");
   if(activeExplainer(state)!==playerId)throw new Error("Сейчас объясняет другой игрок твоей команды.");
   if(action.type==="correct"||action.type==="skip"){
@@ -71,7 +76,7 @@ export function applyAliasAction(source:AliasState,playerId:string,action:AliasA
 }
 export function getAliasPublicState(state:AliasState){
   return {
-    gameId:state.gameId,status:state.status,players:state.players.map((id)=>({id,team:state.teams[id]})),
+    gameId:state.gameId,status:state.status,hostId:state.hostId,players:state.players.map((id)=>({id,team:state.teams[id]})),
     scores:state.scores,scoreToWin:state.scoreToWin,currentTeam:state.currentTeam,
     currentExplainerId:activeExplainer(state),round:state.round,wordsPlayed:state.wordIndex,
     winnerTeam:state.winnerTeam,lastEvent:state.lastEvent
@@ -79,6 +84,6 @@ export function getAliasPublicState(state:AliasState){
 }
 export function getAliasPrivateState(state:AliasState,playerId:string){
   if(!state.players.includes(playerId))throw new Error("Ты не участник игры.");
-  const isExplainer=activeExplainer(state)===playerId;
+  const isExplainer=state.status==="active"&&activeExplainer(state)===playerId;
   return {isExplainer,word:isExplainer?state.words[state.wordIndex]||null:null};
 }
