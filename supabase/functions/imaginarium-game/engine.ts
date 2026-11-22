@@ -97,4 +97,4 @@ export function getDixitPrivateState(state:DixitState,playerId:string){
  hasSubmitted:state.submissions.some((item)=>item.ownerId===playerId),hasVoted:Boolean(state.votes[playerId])};
 }
 
-export function startImaginarium(playerIds:string[],hostId:string,random:()=>number=Math.random):DixitState{return startDixit(playerIds,hostId,random,"imaginarium");}
+export function startImaginarium(playerIds:string[],hostId:string,random:()=>number=Math.random):DixitState{if(playerIds.length>7)throw new Error("Для Имаджинариума нужно от 3 до 7 игроков.");return startDixit(playerIds,hostId,random,"imaginarium");}
