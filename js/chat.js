@@ -257,8 +257,15 @@ export function renderRoomChat(container, room, currentUser) {
   let remoteUnsubscribe = null;
 
   let remoteMessages = [];
+  function showChatError(error, prefix = "Не удалось загрузить чат") {
+    console.error(prefix, error);
+    const hint = container.querySelector(".room-chat__hint");
+    if (hint) hint.textContent = `${prefix}: ${error?.message || "проверь соединение и права доступа Supabase"}`;
+  }
+
   async function renderMessages({ keepScroll = false } = {}) {
-    if (room.remote) { try { remoteMessages = await listOnlineMessages(room.id); } catch (error) { console.warn("Не удалось загрузить онлайн-чат:", error); } }
+    // Do not swallow PostgREST/RLS errors: an empty chat and a failed read are different states.
+    if (room.remote) remoteMessages = await listOnlineMessages(room.id);
     const wasNearBottom = messageList.scrollHeight - messageList.scrollTop - messageList.clientHeight < 90;
     const messages = room.remote ? remoteMessages : readRoomMessages(room.id);
     messageList.innerHTML = messages.length
@@ -295,13 +302,29 @@ export function renderRoomChat(container, room, currentUser) {
   async function sendMessage(text) {
     const clean = String(text || "").trim();
     if (!clean || clean.length > MAX_MESSAGE_LENGTH || !isMember) return;
+    let savedRemotely = false;
     try {
-      if (room.remote) { await sendOnlineMessage(room.id, currentUser.id, clean); await renderMessages({ keepScroll: true }); }
-      else { addUserMessage(room.id, currentUser, clean); renderMessages(); }
-      textarea.value = ""; updateCounter(); textarea.focus();
+      if (room.remote) {
+        await sendOnlineMessage(room.id, currentUser.id, clean);
+        savedRemotely = true;
+        await renderMessages({ keepScroll: true });
+      } else {
+        addUserMessage(room.id, currentUser, clean);
+        renderMessages();
+      }
+      textarea.value = "";
+      updateCounter();
+      textarea.focus();
     } catch (error) {
-      const hint = container.querySelector(".room-chat__hint");
-      if (hint) hint.textContent = error.message || "Не удалось отправить сообщение.";
+      if (savedRemotely) {
+        // The INSERT succeeded, but the follow-up SELECT failed. Tell the user what happened
+        // instead of silently presenting the chat as if the message had disappeared.
+        textarea.value = "";
+        updateCounter();
+        showChatError(error, "Сообщение сохранено, но историю чата обновить не удалось");
+      } else {
+        showChatError(error, "Не удалось отправить сообщение");
+      }
     }
   }
 
@@ -352,9 +375,20 @@ export function renderRoomChat(container, room, currentUser) {
     observer?.disconnect();
   }
 
-  renderMessages();
+  renderMessages().catch((error) => showChatError(error));
   renderOnline();
-  if (room.remote && isMember) remoteUnsubscribe = subscribeOnlineRoom(room.id, async (payload) => { if (payload?.table === "club_room_members") { const fresh = await getOnlineRoom(room.id); if (fresh) room.members = fresh.members; } renderMessages({ keepScroll: true }); renderOnline(); });
+  if (room.remote && isMember) remoteUnsubscribe = subscribeOnlineRoom(room.id, async (payload) => {
+    try {
+      if (payload?.table === "club_room_members") {
+        const fresh = await getOnlineRoom(room.id);
+        if (fresh) room.members = fresh.members;
+      }
+      await renderMessages({ keepScroll: true });
+      renderOnline();
+    } catch (error) {
+      showChatError(error, "Не удалось обновить онлайн-чат");
+    }
+  });
 
   if (isMember) {
     updatePresence();
